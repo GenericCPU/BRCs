@@ -6,3 +6,4 @@ BRC   | Standard
 ------|------------------
 102   | [The deployment-info.json Specification](./0102.md)
 122   | [Auditable Real-time Inference Architecture (ARIA)](./0122.md)
+141   | [NotaryHash — Privacy-Preserving Signed-Hash Notarization with SPV-Verifiable Certificates](./0141.md)
