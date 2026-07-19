@@ -12,6 +12,7 @@
 
 * [The deployment-info.json Specification](./apps/0102.md)
 * [Auditable Real-time Inference Architecture (ARIA)](./apps/0122.md)
+* [Frictionless On-Chain Onboarding via Pre-Funded Claimable Tokens](./apps/0147.md)
 
 ## Wallet
 
