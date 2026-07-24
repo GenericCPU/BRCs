@@ -34,3 +34,4 @@ BRC | Standard
 134  | [Multicast Anchor Transaction Frame Format](./0134.md)
 135  | [Multicast Block Header Format](./0135.md)
 139  | [Multicast Shard Manifest Announcement Protocol](./0139.md)
+149  | [Multicast BEEF Object Frame Format](./0149.md)

@@ -204,6 +204,7 @@ BRC | Standard
 138  | [Single-Use Signed Proofs for Request Authentication](./peer-to-peer/0138.md)
 139  | [Multicast Shard Manifest Announcement Protocol](./transactions/0139.md)
 140  | [Threshold Key Sharing and Backup via Shamir's Secret Sharing Scheme](./key-derivation/0140.md)
+149  | [Multicast BEEF Object Frame Format](./transactions/0149.md)
 
 ## License
 
