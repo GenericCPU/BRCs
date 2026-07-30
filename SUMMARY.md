@@ -104,6 +104,7 @@
 * [Merkle Proof Token](./tokens/0113.md)
 * [Identity-Linked Deterministic Token Verification Framework](./tokens/0115.md)
 * [Proof-of-Indexing Hash-to-Mint Tokens](./tokens/0117.md)
+* [Miner-Enforced Resale-Royalty Covenant Tokens (OP_PUSH_TX)](./tokens/0226.md)
 
 ## Overlays
 
