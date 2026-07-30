@@ -15,6 +15,7 @@
 * [Chat-Native Command Grammar for the Metanet](./apps/0218.md)
 * [NotaryHash — Privacy-Preserving Signed-Hash Notarization with SPV-Verifiable Certificates](./apps/0220.md)
 * [Block Media Format (BMF) — Composable On-Chain Audio/Video](./apps/0224.md)
+* [Frictionless On-Chain Onboarding via Pre-Funded Claimable Tokens](./apps/0227.md)
 
 ## Wallet
 
