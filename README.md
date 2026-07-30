@@ -209,6 +209,7 @@ BRC | Standard
 219  | [Wallet Permission Prompt Liveness Contract](./wallet/0219.md)
 220  | [NotaryHash — Privacy-Preserving Signed-Hash Notarization with SPV-Verifiable Certificates](./apps/0220.md)
 221  | [Multicast Transaction Bundle Frame Format](./transactions/0221.md)
+222  | [Subtree Data Frame Format](./transactions/0222.md)
 
 ## License
 
