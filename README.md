@@ -206,6 +206,7 @@ BRC | Standard
 140  | [Threshold Key Sharing and Backup via Shamir's Secret Sharing Scheme](./key-derivation/0140.md)
 169  | [Universal Handle Addressing and Resolution for the Metanet](./peer-to-peer/0169.md)
 218  | [Chat-Native Command Grammar for the Metanet](./apps/0218.md)
+219  | [Wallet Permission Prompt Liveness Contract](./wallet/0219.md)
 
 ## License
 
