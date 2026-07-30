@@ -13,6 +13,7 @@
 * [The deployment-info.json Specification](./apps/0102.md)
 * [Auditable Real-time Inference Architecture (ARIA)](./apps/0122.md)
 * [Chat-Native Command Grammar for the Metanet](./apps/0218.md)
+* [NotaryHash — Privacy-Preserving Signed-Hash Notarization with SPV-Verifiable Certificates](./apps/0220.md)
 
 ## Wallet
 
