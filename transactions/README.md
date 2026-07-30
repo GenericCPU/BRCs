@@ -37,3 +37,4 @@ BRC | Standard
 221  | [Multicast Transaction Bundle Frame Format](./0221.md)
 222  | [Subtree Data Frame Format](./0222.md)
 223  | [Block Frame Format](./0223.md)
+228  | [Multicast Shard Domain Partitioning and the BEEF Object Plane](./0228.md)

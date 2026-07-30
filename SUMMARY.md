@@ -80,6 +80,7 @@
 * [Multicast Transaction Bundle Frame Format](./transactions/0221.md)
 * [Subtree Data Frame Format](./transactions/0222.md)
 * [Block Frame Format](./transactions/0223.md)
+* [Multicast Shard Domain Partitioning and the BEEF Object Plane](./transactions/0228.md)
 
 ## Scripts
 
