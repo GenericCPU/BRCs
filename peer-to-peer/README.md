@@ -18,3 +18,4 @@ BRC | Standard
 104  | [HTTP Transport for BRC-103 Mutual Authentication](./0104.md)
 138  | [Single-Use Signed Proofs for Request Authentication](./0138.md)
 169  | [Universal Handle Addressing and Resolution for the Metanet](./0169.md)
+225  | [Animated-QR Air-Gap Transport for Arbitrary Payloads (TKQR1)](./0225.md)
