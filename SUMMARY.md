@@ -154,6 +154,7 @@
 * [Peer-to-Peer Mutual Authentication and Certificate Exchange Protocol](./peer-to-peer/0103.md)
 * [HTTP Transport for BRC-103 Mutual Authentication](./peer-to-peer/0104.md)
 * [Single-Use Signed Proofs for Request Authentication](./peer-to-peer/0138.md)
+* [Fountain-Coded Air-Gap Transport for Arbitrary Payloads](./peer-to-peer/0141.md)
 * [Universal Handle Addressing and Resolution for the Metanet](./peer-to-peer/0169.md)
 * [Animated-QR Air-Gap Transport for Arbitrary Payloads (TKQR1)](./peer-to-peer/0225.md)
 
