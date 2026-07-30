@@ -210,6 +210,7 @@ BRC | Standard
 220  | [NotaryHash — Privacy-Preserving Signed-Hash Notarization with SPV-Verifiable Certificates](./apps/0220.md)
 221  | [Multicast Transaction Bundle Frame Format](./transactions/0221.md)
 222  | [Subtree Data Frame Format](./transactions/0222.md)
+223  | [Block Frame Format](./transactions/0223.md)
 
 ## License
 
