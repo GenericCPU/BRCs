@@ -14,3 +14,5 @@ BRC  | Standard
 91   | [Outputs, Overlays, and Scripts in the Mandala Network](./0091.md)
 110  | [Zero-Friction, Mobile-First Onboarding for MetaNet-Enabled Apps](./0110.md)
 137  | [Device-Aware Wallet Onboarding and Fallback Login for BRC-100 Applications](./0137.md)
+151  | [BRC-100 Risk Assessment and Best Integration Practices](./0151.md)
+152  | [Best Practices for Regulated Tokens in a BRC-100 Ecosystem](./0152.md)

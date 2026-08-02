@@ -214,6 +214,8 @@ BRC | Standard
 148  | [Multicast Shard Domain Partitioning and the BEEF Object Plane](./transactions/0148.md)
 149  | [Multicast BEEF Object Frame Format](./transactions/0149.md)
 150  | [1Sat Provenance Remittance for Basket `1sat`](./tokens/0150.md)
+151  | [BRC-100 Risk Assessment and Best Integration Practices](./opinions/0151.md)
+152  | [Best Practices for Regulated Tokens in a BRC-100 Ecosystem](./opinions/0152.md)
 169  | [Universal Handle Addressing and Resolution for the Metanet](./peer-to-peer/0169.md)
 218  | [Chat-Native Command Grammar for the Metanet](./apps/0218.md)
 219  | [Wallet Permission Prompt Liveness Contract](./wallet/0219.md)
