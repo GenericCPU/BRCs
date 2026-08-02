@@ -218,6 +218,8 @@ BRC | Standard
 227  | [Frictionless On-Chain Onboarding via Pre-Funded Claimable Tokens](./apps/0227.md)
 228  | [Multicast Shard Domain Partitioning and the BEEF Object Plane](./transactions/0228.md)
 229  | [Multicast BEEF Object Frame Format](./transactions/0229.md)
+230  | [1Sat Ordinals Basket Profile for BRC-46 / BRC-100](./tokens/0230.md)
+231  | [1Sat Provenance Remittance for Basket `1sat`](./tokens/0231.md)
 
 ## License
 
