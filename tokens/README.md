@@ -13,4 +13,6 @@ BRC | Standard
 113  | [Merkle Proof Token](./0113.md)
 115  | [Identity-Linked Deterministic Token Verification Framework](./0115.md)
 117  | [Proof-of-Indexing Hash-to-Mint Tokens](./0117.md)
+147  | [1Sat Ordinals Basket Profile for BRC-46 / BRC-100](./0147.md)
+150  | [1Sat Provenance Remittance for Basket `1sat`](./0150.md)
 226  | [Miner-Enforced Resale-Royalty Covenant Tokens (OP_PUSH_TX)](./0226.md)
