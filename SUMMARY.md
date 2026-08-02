@@ -77,11 +77,11 @@
 * [Multicast Anchor Transaction Frame Format](./transactions/0134.md)
 * [Multicast Block Header Format](./transactions/0135.md)
 * [Multicast Shard Manifest Announcement Protocol](./transactions/0139.md)
-* [Multicast Transaction Bundle Frame Format](./transactions/0221.md)
-* [Subtree Data Frame Format](./transactions/0222.md)
-* [Block Frame Format](./transactions/0223.md)
-* [Multicast Shard Domain Partitioning and the BEEF Object Plane](./transactions/0228.md)
-* [Multicast BEEF Object Frame Format](./transactions/0229.md)
+* [Multicast Transaction Bundle Frame Format](./transactions/0142.md)
+* [Subtree Data Frame Format](./transactions/0143.md)
+* [Block Frame Format](./transactions/0144.md)
+* [Multicast Shard Domain Partitioning and the BEEF Object Plane](./transactions/0148.md)
+* [Multicast BEEF Object Frame Format](./transactions/0149.md)
 
 ## Scripts
 
