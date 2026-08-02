@@ -46,6 +46,7 @@
 * [Wallet Permissions and Counterparty Trust](./wallet/0116.md)
 * [Basket Permission Scheme Registry and Governance](./wallet/0123.md)
 * [Wallet Permission Prompt Liveness Contract](./wallet/0219.md)
+* [Pluggable Backup Services for BRC-140 Share Vaults](./wallet/0232.md)
 
 ## Transactions
 
