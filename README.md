@@ -209,6 +209,7 @@ BRC | Standard
 143  | [Subtree Data Frame Format](./transactions/0143.md)
 144  | [Block Frame Format](./transactions/0144.md)
 145  | [Registry-Free Typed Content Anchor with On-Chain Code Provenance](./apps/0145.md)
+146  | [Access Gates for Metanet Rooms](./apps/0146.md)
 148  | [Multicast Shard Domain Partitioning and the BEEF Object Plane](./transactions/0148.md)
 149  | [Multicast BEEF Object Frame Format](./transactions/0149.md)
 169  | [Universal Handle Addressing and Resolution for the Metanet](./peer-to-peer/0169.md)
