@@ -36,4 +36,5 @@ BRC | Standard
 116  | [Wallet Permissions and Counterparty Trust](./0116.md)
 123  | [Basket Permission Scheme Registry and Governance](./0123.md)
 153  | [Action References for BRC-100 Wallets](./0153.md)
+154  | [Pluggable Backup Services for BRC-140 Share Vaults](./0154.md)
 219  | [Wallet Permission Prompt Liveness Contract](./0219.md)
