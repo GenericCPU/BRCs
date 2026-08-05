@@ -112,6 +112,7 @@
 * [Proof-of-Indexing Hash-to-Mint Tokens](./tokens/0117.md)
 * [1Sat Ordinals Basket Profile for BRC-46 / BRC-100](./tokens/0147.md)
 * [1Sat Provenance Remittance for Basket `1sat`](./tokens/0150.md)
+* [Latched 1Sat Provenance for Basket `1sat`](./tokens/0153.md)
 * [Miner-Enforced Resale-Royalty Covenant Tokens (OP_PUSH_TX)](./tokens/0226.md)
 
 ## Overlays
