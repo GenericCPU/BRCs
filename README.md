@@ -218,6 +218,7 @@ BRC | Standard
 152  | [Best Practices for Regulated Tokens in a BRC-100 Ecosystem](./opinions/0152.md)
 153  | [Action References for BRC-100 Wallets](./wallet/0153.md)
 154  | [Pluggable Backup Services for BRC-140 Share Vaults](./wallet/0154.md)
+155  | [Pull-Based Receive Discovery](./wallet/0155.md)
 168  | [Verifiable Time Allocation](./apps/0168.md)
 169  | [Universal Handle Addressing and Resolution for the Metanet](./peer-to-peer/0169.md)
 218  | [Chat-Native Command Grammar for the Metanet](./apps/0218.md)
