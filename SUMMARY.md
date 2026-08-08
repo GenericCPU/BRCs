@@ -181,6 +181,7 @@
 * [Limitations of BRC-69 Key Linkage Revelation](./key-derivation/0093.md)
 * [Verifiable Revelation of Shared Secrets Using Schnorr Protocol](./key-derivation/0094.md)
 * [Threshold Key Sharing and Backup via Shamir's Secret Sharing Scheme](./key-derivation/0140.md)
+* [Entropy-Rooted Backup and Recovery with Mnemonics and Backup Shares](./key-derivation/0157.md)
 
 ## Outpoints
 

@@ -220,6 +220,7 @@ BRC | Standard
 154  | [Pluggable Backup Services for BRC-140 Share Vaults](./wallet/0154.md)
 155  | [Pull-Based Receive Discovery](./wallet/0155.md)
 156  | [Latched 1Sat Provenance for Basket `1sat`](./tokens/0156.md)
+157  | [Entropy-Rooted Backup and Recovery with Mnemonics and Backup Shares](./key-derivation/0157.md)
 168  | [Verifiable Time Allocation](./apps/0168.md)
 169  | [Universal Handle Addressing and Resolution for the Metanet](./peer-to-peer/0169.md)
 218  | [Chat-Native Command Grammar for the Metanet](./apps/0218.md)
