@@ -219,6 +219,7 @@ BRC | Standard
 153  | [Action Reference Labels for BRC-100 Wallets](./wallet/0153.md)
 154  | [Pluggable Backup Services for BRC-140 Share Vaults](./wallet/0154.md)
 155  | [Pull-Based Receive Discovery](./wallet/0155.md)
+157  | [Entropy-Rooted Backup and Recovery with Mnemonics and Backup Shares](./key-derivation/0157.md)
 168  | [Verifiable Time Allocation](./apps/0168.md)
 169  | [Universal Handle Addressing and Resolution for the Metanet](./peer-to-peer/0169.md)
 210  | [Derived Collectibles](./apps/0210.md)
