@@ -1,6 +1,6 @@
 ---
 name: brcs
-description: Triage and merge open PRs on the bitcoin-sv/BRCs repository. Assigns the lowest available BRC number (filling gaps before extending past the highest), renames files when needed, wires links into README.md / SUMMARY.md / dir README. Use when user says "/brcs", "merge BRC PRs", "triage BRCs", "process BRC pull requests", or wants to drain the open PR queue on the BRCs docs repo.
+description: Triage and merge open PRs on the bitcoin-sv/BRCs repository. Keeps the BRC number each PR assigned itself unless that number is already taken; only then reassigns (with the user's approval) to the lowest available number. Renames files when needed, wires links into README.md / SUMMARY.md / dir README. Use when user says "/brcs", "merge BRC PRs", "triage BRCs", "process BRC pull requests", or wants to drain the open PR queue on the BRCs docs repo.
 user-invocable: true
 allowed-tools:
   - Bash
@@ -41,7 +41,9 @@ gh pr list --state open --limit 50
 
 Read `README.md` "## Standards" table. Highest existing `NNN | [Title](path)` row = `LAST_BRC`.
 
-**Numbers are allocated lowest-available-first, not highest+1.** The range `1..LAST_BRC` has gaps (withdrawn/never-landed BRCs). Compute the free list from the files actually on disk:
+**The PR's own number is authoritative unless it collides.** Authors pick numbers deliberately — often memetic or self-referential (e.g. `0069`, `0100`, matching a sibling BRC). Never renumber just because a lower gap exists or because the number is above `LAST_BRC`. A number is only reassigned when it is *taken*: a file with that number already exists on disk, or an earlier PR in this same run has claimed it.
+
+The `TAKEN` set and the free list both come from the files actually on disk:
 
 ```bash
 find . -path './.git' -prune -o -name "[0-9]*.md" -print \
@@ -51,7 +53,9 @@ comm -23 <(seq 1 "$LAST_BRC" | sort) <(sort /tmp/nums.txt) | sort -n > /tmp/free
 echo "LAST_BRC=$LAST_BRC  next free: $(head -1 /tmp/free_brc.txt)"
 ```
 
-`FREE_LIST` = `/tmp/free_brc.txt` (ascending). Allocate the head of `FREE_LIST` to each new BRC; pop it as you go. When `FREE_LIST` is empty, fall back to `LAST_BRC + 1`.
+`TAKEN` = `/tmp/nums.txt` (every number on disk). `FREE_LIST` = `/tmp/free_brc.txt` (ascending gaps in `1..LAST_BRC`).
+
+`FREE_LIST` is **only** consulted for collisions. It is the fallback allocator, not the default one. When it is empty, fall back to `LAST_BRC + 1`. Add each merged BRC's number to `TAKEN` as you go, so a later PR in the run collides against it correctly.
 
 Also note structure:
 - Per-category dir READMEs: `apps/README.md`, `wallet/README.md`, `transactions/README.md`, `payments/README.md`, `overlays/README.md`, `peer-to-peer/README.md`, `key-derivation/README.md`, `outpoints/README.md`, `opinions/README.md`, `tokens/README.md`, `scripts/README.md`, `state-machines/README.md`.
@@ -86,19 +90,32 @@ PR's latest commit modifies an existing BRC file with non-trivial changes (rewor
 Action: `git merge --no-ff --no-commit pr-<N>`. Resolve conflicts (see Step 4). Also update any title-bearing references in `SUMMARY.md` + dir README if the BRC's title changed. Commit with body referencing PR.
 
 ### (d) New BRC
-PR adds a new `<dir>/NNNN.md`. Compare the proposed number against `ASSIGNED` = head of `FREE_LIST` (Step 1) — the **lowest available** number, falling back to `LAST_BRC + 1` only when no gaps remain.
+PR adds a new `<dir>/NNNN.md` claiming number `PROPOSED`.
 
-- **If proposed number == `ASSIGNED`** → keep number, just merge.
-- **Otherwise** (proposed is taken, is a higher number while gaps exist, or another PR in the queue claims it) → reassign:
-  1. `ASSIGNED` = head of `FREE_LIST`; pop it so the next PR in this run gets the following gap.
+**Default: keep `PROPOSED`.** Check only for collision:
+
+```bash
+grep -qx "$PROPOSED" /tmp/nums.txt && echo COLLISION || echo FREE
+```
+
+(also treat it as a collision if an earlier PR in this run was assigned `PROPOSED`).
+
+- **FREE** → `ASSIGNED = PROPOSED`. Merge as-is. No rename, no `sed`, no session mapping entry. This holds even when `PROPOSED` is far above `LAST_BRC` or leaves gaps below it — leaving gaps is fine and expected.
+- **COLLISION** → the number is genuinely unusable. Before touching anything, **ask the user** via `AskUserQuestion`:
+  - state which existing file/PR holds `PROPOSED`,
+  - offer the lowest available number (head of `FREE_LIST`, else `LAST_BRC + 1`) as the recommended option,
+  - note that authors often pick numbers for a reason, so the user may prefer another number or to ask the author.
+
+  Renumbering is never automatic — a collision is a question, not a decision. On approval:
+  1. `ASSIGNED` = the number the user chose; pop it from `FREE_LIST` if it came from there.
   2. `git mv <dir>/<PROPOSED>.md <dir>/<ASSIGNED>.md` in the PR's branch (or apply rename after merge). Filenames are zero-padded to 4 digits (`0141.md`).
   3. In the renamed doc, `sed -i '' "s/BRC-<PROPOSED>/BRC-<ASSIGNED>/g"` (or Edit) — but **only the document's self-references** (title heading + any "this BRC" / "BRC-XXX" pointers pointing at itself). Do NOT change references to *other* BRCs.
   4. Track the mapping `PROPOSED → ASSIGNED` for this session.
   5. Before merging each subsequent PR, grep its files for any reference to a `PROPOSED` number that has since been remapped and rewrite to `ASSIGNED`.
 
-Action: merge, resolve conflicts, update indices (Step 5), commit. Pop `ASSIGNED` from `FREE_LIST` (or increment `LAST_BRC` if it came from the fallback).
+Action: merge, resolve conflicts, update indices (Step 5), commit. Add `ASSIGNED` to `TAKEN`; bump `LAST_BRC` if `ASSIGNED > LAST_BRC`.
 
-**Note on filling gaps:** a gap may exist because that number was withdrawn or is informally reserved. Mention gap-filling in the final report so the user can object; do not skip a gap on a hunch.
+**Note on gaps:** gaps in `1..LAST_BRC` are left alone. A gap may exist because that number was withdrawn or is informally reserved, so it is only ever filled as the fallback target of an approved collision fix — never proactively, and never to "tidy up" the numbering.
 
 ## Step 3 — Track BRC number mapping
 
@@ -136,7 +153,7 @@ If any PR pulled in unrelated stale changes (e.g. removed sections because its b
 
 Every new BRC needs entries in **three** places (four if there's a dir README beyond the standard set).
 
-**All three indices are sorted ascending by BRC number.** Because numbers are allocated lowest-available-first, a new entry usually goes **in the middle, not at the end** — insert it in sorted position, do not append. Use `Edit` anchored on the surrounding rows (`sed` with `|` delimiters breaks on the table's own pipes).
+**All three indices are sorted ascending by BRC number.** Since the PR keeps its own number, the entry often does sort last — but not always (a number below `LAST_BRC` lands mid-table). Check where it belongs and insert in sorted position rather than assuming append. Use `Edit` anchored on the surrounding rows (`sed` with `|` delimiters breaks on the table's own pipes).
 
 1. **`README.md`** top-level table — insert row into the `BRC | Standard` table in numeric order:
    ```
@@ -153,9 +170,9 @@ Every new BRC needs entries in **three** places (four if there's a dir README be
    * [Title](./<dir>/NNNN.md)
    ```
 
-PR authors usually update some but not all, and they typically append their row at the bottom assuming highest+1. Diff PR's `files` list against this 3-place requirement, move any appended row into sorted position, and add missing entries manually before commit.
+PR authors usually update some but not all. Diff PR's `files` list against this 3-place requirement, move any misplaced row into sorted position, and add missing entries manually before commit.
 
-Caveat for Step 4: the strip-conflict-markers `sed` keeps `HEAD`'s lines then the PR's line — correct only when the new row genuinely sorts last. When filling a gap, strip the markers then move the row into place, or drop the PR's row and re-add it manually in sorted position.
+Caveat for Step 4: the strip-conflict-markers `sed` keeps `HEAD`'s lines then the PR's line — correct only when the new row genuinely sorts last. When the number sorts mid-table, strip the markers then move the row into place, or drop the PR's row and re-add it manually in sorted position.
 
 ## Step 6 — Commit
 
@@ -259,8 +276,10 @@ Remaining open: #Q (reason: draft / blocked / ...)
 
 ## Guardrails
 
+- **Never** renumber a PR whose chosen number is free. Authors pick numbers deliberately (memetic, sequential with a sibling BRC, matching an external reference). A gap below it is not a reason; being above `LAST_BRC` is not a reason. Only a genuine collision is.
+- **Always** ask the user before renumbering, even on a real collision — never silently remap.
 - **Never** modify the substance of a contributor's document beyond:
-  - BRC number reassignment (title heading + self-references only)
+  - BRC number reassignment (title heading + self-references only, after user approval)
   - Cross-reference rewrites for renumbered peers (Step 3)
   - Whitespace/conflict-marker cleanup
 - **Always** confirm with user before closing a PR — closing is an external write under the user's identity.
