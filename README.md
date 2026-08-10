@@ -25,7 +25,7 @@ The standards in this repository are vendor-neutral. Current BSV Association ref
 - `@bsv/sdk` for TypeScript SDK primitives, transactions, identities, overlays, storage, and the BRC-100 `WalletClient` interface.
 - `@bsv/wallet-toolbox` for BRC-100 wallet storage, services, signing, monitoring, and wallet implementation tooling.
 - BSV Desktop and BSV Browser as BSV Association reference wallet/browser applications for the BRC-100 interface.
-- Overlay service implementations in `bsv-blockchain/overlay-services`, `bsv-blockchain/overlay-express`, and related overlay example repositories.
+- Overlay service implementations in [`bsv-blockchain/ts-stack`](https://github.com/bsv-blockchain/ts-stack/tree/main/packages/overlays), including the `overlay` and `overlay-express` packages, and related overlay example repositories.
 
 Vendor distributions can implement the same standards with their own branding and hosted service defaults. Examples include Babbage's Metanet Desktop / Metanet Explorer as well as the Hudos Browser built by Matt Archbold.
 
