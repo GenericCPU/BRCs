@@ -21,6 +21,7 @@ BRC | Standard
 83   | [Scalable Transaction Processing in the BSV Network](./0083.md)
 95   | [Atomic BEEF Transactions](./0095.md)
 96   | [BEEF V2 Txid Only Extension](./0096.md)
+158  | [Outpoint BEEF](./0158.md)
 119  | [SubTree Unified Merkle Path (STUMP) Format](./0119.md)
 124  | [Multicast Transaction Frame Format](./0124.md)
 126  | [Multicast Transaction NACK Retransmission Protocol](./0126.md)
