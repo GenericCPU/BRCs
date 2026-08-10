@@ -223,6 +223,7 @@ BRC | Standard
 158  | [Outpoint BEEF](./transactions/0158.md)
 159  | [1Sat Ordinals — Single-Satoshi Tokens and Origin Tracking](./tokens/0159.md)
 160  | [1Sat Ordinals — Inscription Envelopes](./tokens/0160.md)
+163  | [BSV-21 Basket Profile for BRC-46 / BRC-100](./tokens/0163.md)
 168  | [Verifiable Time Allocation](./apps/0168.md)
 169  | [Universal Handle Addressing and Resolution for the Metanet](./peer-to-peer/0169.md)
 210  | [Derived Collectibles](./apps/0210.md)
