@@ -120,6 +120,8 @@
 * [1Sat Provenance Remittance for Basket `1sat`](./tokens/0150.md)
 * [1Sat Ordinals — Single-Satoshi Tokens and Origin Tracking](./tokens/0159.md)
 * [1Sat Ordinals — Inscription Envelopes](./tokens/0160.md)
+* [BSV-21 Fungible Tokens (JSON / Legacy)](./tokens/0161.md)
+* [BSV-21 Fungible Tokens (Binary)](./tokens/0162.md)
 * [Miner-Enforced Resale-Royalty Covenant Tokens (OP_PUSH_TX)](./tokens/0226.md)
 
 ## Overlays
