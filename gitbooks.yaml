@@ -18,12 +18,12 @@ plugins:
 languages:
   - en
 github:
-  repository: https://github.com/bitcoin-sv/BRCs
+  repository: https://github.com/bsv-blockchain/BRCs
 theme:
   navigationDepth: 2
   style: website
 links:
   sharing:
-    github: https://github.com/bitcoin-sv/BRCs
+    github: https://github.com/bsv-blockchain/BRCs
     twitter: https://twitter.com/BitcoinAssn
     linkedin: https://www.linkedin.com/company/bitcoinassociation

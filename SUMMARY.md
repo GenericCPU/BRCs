@@ -2,7 +2,7 @@
 
 ## Contribute
 
-* [Discuss on Github](https://github.com/bitcoin-sv/BRCs/discussions/new/choose)
+* [Discuss on Github](https://github.com/bsv-blockchain/BRCs/discussions/new/choose)
 
 ## Example
 
