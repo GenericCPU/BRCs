@@ -38,4 +38,5 @@ BRC | Standard
 153  | [Action Reference Labels for BRC-100 Wallets](./0153.md)
 154  | [Pluggable Backup Services for BRC-140 Share Vaults](./0154.md)
 155  | [Pull-Based Receive Discovery](./0155.md)
+164  | [Output Identity Tags for BRC-100 Wallets](./0164.md)
 219  | [Wallet Permission Prompt Liveness Contract](./0219.md)
