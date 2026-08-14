@@ -224,6 +224,7 @@ BRC | Standard
 159  | [1Sat Ordinals — Single-Satoshi Tokens and Origin Tracking](./tokens/0159.md)
 160  | [1Sat Ordinals — Inscription Envelopes](./tokens/0160.md)
 164  | [Output Identity Tags for BRC-100 Wallets](./wallet/0164.md)
+165  | [P1Sat Collectable Permission Scheme for BRC-100](./tokens/0165.md)
 168  | [Verifiable Time Allocation](./apps/0168.md)
 169  | [Universal Handle Addressing and Resolution for the Metanet](./peer-to-peer/0169.md)
 210  | [Derived Collectibles](./apps/0210.md)
