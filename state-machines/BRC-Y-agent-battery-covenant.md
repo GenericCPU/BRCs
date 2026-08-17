@@ -168,8 +168,8 @@ routes out — the second of which requires nothing at all:
 |---|---|---|
 | **a** | a literal baked into the script | cannot be amended in place; escape via (c) or (d) |
 | **b** | a field an owner key may update | amendable in place, at the cost of the ownerless configuration |
-| **c** | **supersede: mint a corrected instance, leave the old unfunded** | **nothing, and it needs no key** |
-| **d** | retire the old instance by burning it | only tidies the UTXO set; requires an owner path |
+| **c** | **supersede: mint a corrected instance, leave the old unfunded** | needs no key — but **strands the fuel still in it**, permanently |
+| **d** | burn the old instance | **recovers that fuel** — but requires an owner path, so the instance can never have been ownerless |
 
 **(a)** is the strongest and what the deployed instances use. Nothing can amend it, which is the point: no
 key's compromise can change what a tick may cost.
@@ -180,21 +180,36 @@ to a party — but a ticker who also mines captures the fee, so an unnecessarily
 than merely wastes. An implementation offering (b) SHOULD bound the update, by a maximum or a rate limit or
 both, and SHOULD state that the ownerless configuration is no longer available to it.
 
-**(c) is the real escape hatch, it is available in every configuration, and it requires no authority
-whatsoever.** Mint a corrected instance and simply stop funding the flawed one. It goes flat and stays flat.
-Nothing has to be signed, no retirement path has to exist, and none of this depends on the old covenant
-cooperating — which matters, because a genuinely ownerless covenant *has* no retirement path to invoke.
+**(c) is available in every configuration and requires no authority whatsoever.** Mint a corrected instance
+and stop fuelling the flawed one. It goes flat and stays flat. Nothing is signed, no retirement path need
+exist, and it does not depend on the old covenant cooperating — which matters, because a genuinely ownerless
+covenant *has* no path to invoke.
 
-⚠ **But abandonment is dormancy, not deletion, and §8 is what makes that true.** A flat covenant resumes on
-any top-up from anyone. So an abandoned instance's behaviour remains permanently *available*: a stranger may
-refuel a superseded covenant years later and it will run exactly as originally written. You cannot withdraw a
-covenant, only decline to feed it. **That is the permanent cost, and it is a reputational one rather than a
-financial one** — the flawed thing keeps your name on it and can be woken by anybody.
+It has two costs, and the first is easy to overlook while thinking about correctness:
 
-**(d)** burning is therefore an optimisation, not the mechanism: it reclaims a UTXO and forecloses revival.
-It requires an owner path, and adding one for this purpose alone forfeits the ownerless configuration in
-exchange for tidiness. ⚠ Where permanence is the point — a monument, a public artefact — omitting a burn is
-the correct choice and the stranded satoshi is the price of it.
+⚠ **Whatever fuel the flawed instance holds is stranded, permanently.** Abandonment is free of authority, not
+free of money. An instance funded for a long run and abandoned three steps in keeps the remainder forever,
+and no key exists that could ask for it back.
+
+⚠ **Abandonment is dormancy, not deletion, and §8 is what makes that true.** A flat covenant resumes on a
+top-up from anyone, so an abandoned instance's behaviour stays permanently *available*: a stranger may refuel
+a superseded covenant years later and it will run exactly as written. A published covenant cannot be
+withdrawn, only left unfed.
+
+**(d) burning is how the stranded fuel is recovered**, and that is its purpose rather than tidiness. The
+signature that authorises it commits to every output of the transaction, so the owner states where the value
+goes — ordinarily back to their own wallet. This is why instances built for testing SHOULD be burnable: a
+development cycle mints covenants that are *expected* to be wrong, and without a burn every one of them takes
+its funding with it.
+
+⇒ **You cannot have both an ownerless covenant and recoverable funds, and the choice is per instance.** A
+burn path is an owner authority under §3, so adding one forecloses the ownerless configuration for that
+instance. The reasonable practice is to decide by intent rather than by habit:
+
+| the instance is | give it a burn path? | because |
+|---|---|---|
+| a test, a rehearsal, a variant under proof | **yes** | it will be wrong, and its funding should come home |
+| a monument or public artefact meant to outlive its author | **no** | permanence is the point, and the stranded satoshi is its price |
 
 ⇒ So (a) is not "unamendable" in the sense of unrecoverable. It is unamendable **in place**, and the recovery
 is to supersede rather than to edit. Implementations SHOULD say which of these they chose, because
@@ -247,6 +262,11 @@ When `V < MAX_FEE` the covenant is **flat**. A flat covenant MUST NOT be treated
 intact in its locking script, and a top-up under §4 resumes it at exactly the step it stopped on.
 Implementations MUST NOT add an "expired" state, and in the ownerless configuration MUST NOT provide any path
 that recovers the fuel to a party.
+
+⚠ That prohibition is the whole cost of being ownerless, stated plainly: **an ownerless instance's remaining
+fuel can never be recovered by anybody, including its author.** It is not stranded by accident — it is
+stranded by the same rule that makes the covenant nobody's. An instance that may need its funding back MUST
+be given an owner burn path at genesis (§5d), because one cannot be added afterwards.
 
 Remaining steps are `floor(V / MAX_FEE)`, computable by any observer from the UTXO alone.
 
