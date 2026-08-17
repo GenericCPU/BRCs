@@ -63,16 +63,16 @@ The key words "MUST", "MUST NOT", "SHOULD" and "MAY" are to be interpreted as de
 
 ### 1. Terminology
 
-- **Pot** — the satoshi value carried by the covenant's output. The fuel.
+- **Fuel** — the satoshi value carried by the covenant's output, and the only thing that pays for its steps.
 - **Tick** — one spend that performs one step and re-creates the covenant with the advanced state.
 - **Computation trace** — the ordered ticks from genesis to the unspent tip. Each hop is a step whose
   correctness the covenant enforced as a condition of the hop existing, so the trace is a proof to be
   walked rather than a log to be trusted.
-- **`V`** — the pot of the output being spent, read by the covenant from the preimage.
-- **`MAX_FEE`** — the permanent ceiling on how much value one tick may remove from the pot.
+- **`V`** — the fuel carried by the output being spent, read by the covenant from the preimage.
+- **`MAX_FEE`** — the permanent ceiling on how much fuel one tick may consume.
 - **Ticker** — whoever broadcasts a tick. Risks nothing and gains nothing.
-- **Sponsor** — whoever adds value to the pot.
-- **Flat** — a covenant whose pot can no longer pay for a tick.
+- **Sponsor** — whoever adds fuel.
+- **Flat** — a covenant whose remaining fuel can no longer pay for a tick.
 
 Two roles are OPTIONAL; a covenant MAY bind either, both or neither to a public key:
 
@@ -128,19 +128,20 @@ preimage using a constant scalar whose value is published, and `OP_CHECKSIG` rec
 real transaction, so the spend validates only if the preimage is genuine. State the property as *"no secret
 exists"*, never as *"no signature opcodes"* — the second is checkable and false.
 
-⚠ Whatever the genesis does not provide for, nobody can add to *that instance* later — the only remedy is to
-retire it and mint a corrected one, which is a new covenant with a new identity (§5c). Everything it will do MUST
-be correct when it is broadcast; §10 records a constant that could not be fixed and forced a rebuild.
+⚠ Whatever the genesis does not provide for, nobody can add to *that instance* later. The remedy is to
+supersede it — mint a corrected covenant and stop fuelling the old one (§5c) — which costs the original's
+identity and leaves it dormant rather than gone. Everything an instance will ever do MUST therefore be
+correct when it is broadcast; §10 records a constant that could not be fixed and forced exactly that.
 
 ### 4. The value rule
 
 The covenant MUST enforce `out0.value ≥ V − MAX_FEE`. It MUST be a **floor** and MUST NOT be an equality.
 
-This is the most consequential line in the standard. Under a floor, a transaction that *increases* the pot is
+This is the most consequential line in the standard. Under a floor, a transaction that *increases* the fuel is
 already a valid tick, so a top-up needs no separate code path, no privileged key and no second script —
 adding fuel and advancing the state are one atomic operation.
 
-⚠ Under an equality the pot can only fall. The covenant can never be refuelled by anyone, and it dies
+⚠ Under an equality the fuel can only fall. The covenant can never be refuelled by anyone, and it dies
 permanently on reaching `MAX_FEE`. This is unamendable and has no symptom until the day it stops.
 
 `MAX_FEE` bounds the worst case; it is not the price. An honest ticker pays only what the network requires.
@@ -157,7 +158,7 @@ MAX_FEE ≥ ceil(worstCaseTickBytes × relayRate) × headroom       headroom ~1%
 ```
 
 ⚠ **Set below what the network accepts for the worst case, the covenant is dead on arrival**: no tick can
-ever pay enough to relay, and the pot is stranded. Serializing a real spend is the only permitted method
+ever pay enough to relay, and the remaining fuel is stranded. Serializing a real spend is the only permitted method
 because it is the only one observed to be right.
 
 **How the ceiling is carried, and how a wrong one is escaped.** Two mechanisms for carrying it, and two
@@ -206,7 +207,7 @@ Three sources of size variation, of which **only the first threatens the bound**
    until the first refusal. The ceiling MUST be re-derived per variant, from a single named measurement
    shared by the builder and by whatever checks the builder.
 2. **Extra inputs and outputs — safe.** A sponsored top-up is larger, but the sponsor funds the difference.
-   The ceiling bounds what leaves the *pot*, not what the transaction pays.
+   The ceiling bounds what leaves the *covenant*, not what the transaction pays.
 3. **Variable-length payload — safe.** Free text in an `OP_RETURN` beside a contribution rides on the
    sponsor's transaction, so arbitrary user input cannot threaten a permanent constant.
 
@@ -245,7 +246,7 @@ and its operation order stated wherever truncation makes it observable.
 When `V < MAX_FEE` the covenant is **flat**. A flat covenant MUST NOT be treated as terminated: its state is
 intact in its locking script, and a top-up under §4 resumes it at exactly the step it stopped on.
 Implementations MUST NOT add an "expired" state, and in the ownerless configuration MUST NOT provide any path
-that recovers the pot to a party.
+that recovers the fuel to a party.
 
 Remaining steps are `floor(V / MAX_FEE)`, computable by any observer from the UTXO alone.
 
