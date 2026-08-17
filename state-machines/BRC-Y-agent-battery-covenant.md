@@ -587,8 +587,12 @@ running, advanceable by anyone, unstoppable by its own author, and is simply bei
 This is the price of §3, and it is not hypothetical: *everything the covenant will ever do must be correct
 before the genesis is broadcast.* Implementations SHOULD expect their first genesis to be wrong about
 something, and SHOULD therefore treat the choice of every baked constant as the whole of the engineering
-work rather than as configuration. (For the record, that first instance also labelled itself with a BRC
-number that had not been assigned to it, and that label is likewise permanent.)
+work rather than as configuration.
+
+Both instances declare `BRC-226` in their genesis `OP_RETURN`, which is a conformance claim rather than a
+number this proposal is asking for: a battery *is* a BRC-226 covenant — it reconstructs its own locking
+script from the preimage's `scriptCode` exactly as that standard describes — and what this document adds is
+the funding model and the authority rules layered on top.
 
 ⚠ **An interoperability note.** Seven of the first twenty ticks were refused by a transaction broadcast
 service reporting `461: Non-canonical signature: S value is unnecessarily high`. The rule had been
