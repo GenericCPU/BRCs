@@ -237,6 +237,32 @@ Whether an instance should have a burn path at all, and how to build one without
 is to supersede rather than to edit. Implementations SHOULD say which of these they chose, because
 a reader cannot tell (a) from (b) without reading the script.
 
+#### The requirement that is hard to satisfy, and why
+
+Everything above reduces to one instruction — *the covenant must be right before it is minted and funded* —
+and stating it is not the same as being able to obey it. The difficulty is not arithmetic. It is that a
+covenant of any real size **cannot be read back**, so the thing being verified is a mental model of the script
+rather than the script:
+
+- A working covenant is a few thousand opcodes of stack manipulation with no names, no types and no
+  structure a reader can hold. Reading one by eye is not practical for anybody.
+- **A single modification to a complex script invalidates the model of it that was being checked** — and the
+  model is what the confidence rested on. Change one branch and the offsets, depths and derived constants
+  behind it all move. Whoever or whatever holds the model loses it exactly when the change is made, and a
+  script long enough to be useful is long enough to exceed what can be held at once.
+- So the covenant gets proved correct, in good faith, and is *then* found to be wrong — after minting, after
+  funding, at the one moment when nothing can be changed.
+
+⇒ **Therefore an implementation of this standard needs a way to read its covenant back, not merely a way to
+write one.** A reader that renders a locking script as something a human can check turns "we believe this is
+right" into "this is what it says", and it is the difference between a permanent constant that was verified and
+one that was intended. Implementations SHOULD obtain one before their first genesis rather than after their
+first loss; see the tooling note under Implementations.
+
+⚠ This is offered as the load-bearing lesson of the reference implementation rather than as a preference. The
+requirement in this section was satisfied twice by a test suite that passed while the bound underneath it was
+below the relay floor.
+
 Three sources of size variation, of which **only the first threatens the bound**:
 
 1. **Script variants — dangerous.** Every rule that emits opcodes makes the cheapest spend dearer to mine. A
@@ -306,9 +332,17 @@ network exists.
 
 ⚠ **Note which quantity the test is about.** It is not the *value* locked but the *number of outputs* created.
 A covenant with a terminal state — a phase machine that refuses to advance past "finished" — leaves an output
-nobody can ever spend. One is a curiosity; one per use is unbounded growth in every node's UTXO set. A battery
-has no terminal state, which is why abandoning one costs nothing structurally: its fuel is still spendable by
-advancing it, and any stranger may tick it to flat.
+nobody can ever spend. One is a curiosity; one per use is unbounded growth in every node's UTXO set.
+
+A battery has no terminal state *by design*, which is why abandoning a correct one costs nothing structurally:
+its fuel stays spendable by advancing it, and any stranger may tick it to flat.
+
+⚠⚠ **That is a property of the design, not a guarantee about the artefact. A bug strands fuel exactly as
+effectively as a terminal state does, and it does not have to be intended — it only has to be reachable.** A
+state machine with a condition no spend can satisfy locks its whole balance the moment it arrives there, and
+until then it is indistinguishable from a covenant that works. Every satoshi anybody has contributed is inside
+it. This is not a hypothetical failure mode; it is the one that has to be designed against, and §5's
+requirement exists because of it.
 
 #### 8.2 Why an ownerless covenant MUST NOT have one
 
@@ -462,13 +496,21 @@ source bundle   078a45523f5ba0597aeffe01296d0543566defc20a56c8b4de109ed783bbab17
 It was verified by retrieving the archive from the chain and comparing it byte for byte against the local
 copy — sixteen files, all CRCs intact.
 
-**Tooling.** §5 asks someone to check a permanent number against a script, and §11 makes that the one thing
-that cannot be fixed later. In raw Script it is not a practical check: the ceiling is a two-byte push inside
-a thousand opcodes, and the fee it implies depends on a serialization nobody performs by eye. So the honest
-failure mode of this standard is a correct rule the deployer could not verify. A decompiler answers it — a
-conforming script is read back out of the chain as a short BASIC-dialect program, and that dialect compiles
-forward to Script, so the two can be checked against each other. A sibling covenant's shipped script, 1,108
-hand-written opcodes, reads back as 253 lines.
+**Tooling — how the reader described in §5 was actually obtained.** The problem it solves is not convenience.
+A covenant is a few thousand opcodes with no names and no structure; a permanent constant is a two-byte push
+somewhere inside it; and one modification moves every offset and depth that follows, so whatever model of the
+script was being checked is invalidated by the very change it was meant to verify.
+
+The answer was to make the script readable **in both directions**:
+
+- a deployed locking script is fetched from the chain and rendered as a short program in a BASIC dialect
+- a program in that dialect compiles forward into Script
+- so the two representations can be checked against each other, and a disagreement between the name model and
+  the interpreter is itself the bug report
+
+Measured on the largest hand-written covenant in the family: **1,108 opcodes read back as 253 lines**, and
+15 of 15 decompiled programs recompiled, 9 of them byte-identically. That is the difference between believing
+a script is right and reading what it says.
 
 - Workbench: https://grafverse.com/basic.html
 
