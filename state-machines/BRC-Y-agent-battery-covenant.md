@@ -8,80 +8,57 @@ An agent that spends on Bitcoin is normally given a wallet, which is to say a ke
 capability: it signs anything, for whoever holds it. Funding it lightly bounds the amount at risk without
 bounding the behaviour.
 
-This standard defines a **battery**: a covenant that carries its own fuel, pays each step's fee out of the
-value it already holds, and enforces its own successor state. The authority to act correctly sits in the
-script rather than in anyone's possession, so an agent can be given **control without custody** — a
-credential that advances the covenant and cannot direct value anywhere.
-
-It defines the value rule, the fee ceiling, the authorisation, ownership and control, and the top-up. It does
-not define the work.
+This standard defines a **battery**: a covenant that carries its own fuel, pays each step's fee from the value
+it already holds, and enforces its own successor state. The authority to act correctly sits in the script
+rather than in anyone's possession, so an agent can be given **control without custody** — at most a credential
+that advances the covenant, which cannot direct value anywhere.
 
 ## Motivation
 
-An autonomous program has to answer a question a signed transaction never does: who pays for the next step,
-when nobody is watching? Answering it with a key and a hot wallet makes the agent a custodian, and a
-custodian that reads untrusted text for a living. Rotating the key after an incident concedes the point.
+An autonomous program must answer a question a signed transaction never does: who pays for the next step, when
+nobody is watching? Answering it with a hot wallet makes the agent a custodian — and a custodian that reads
+untrusted text for a living.
 
-`OP_PUSH_TX` removes the need. A covenant that reconstructs the sighash preimage on its own stack constrains
-its successor without anyone signing for identity; BRC-226 establishes that technique. What it leaves open is
-the fee, because a transaction with no fee does not relay and a keyless covenant has no funding UTXO. This
-standard closes it with one move:
+`OP_PUSH_TX` removes the key: a covenant reconstructing the sighash preimage on its own stack constrains its
+successor without anyone signing for identity, as BRC-226 establishes. What remains open is the fee, since a
+transaction with no fee does not relay and a keyless covenant has no funding UTXO. This standard closes it with
+one move:
 
 > **Let the covenant's own carried value be the fuel, and let the fee come out of it.**
 
 A step is then a complete transaction — one input, one output, no funding, no change — that any stranger can
-broadcast. Two properties follow, and they are why this is worth standardising rather than writing once:
-the value becomes a **fuel gauge** any observer can read from the UTXO, and the sequence of steps becomes a
-**computation trace** that is checked rather than trusted.
+broadcast. The value becomes a **fuel gauge** readable from the UTXO, and the steps become a **computation
+trace**, each hop enforced before it could exist, so it is walked and checked rather than trusted.
 
 ### Scope
 
-This standard defines how an on-chain action is paid for and authorised. It does not define what the
-covenant computes, what its state means, or how that state is encoded — for the last, see BRC-X.
+Defines how an on-chain action is paid for and authorised. Does not define what the covenant computes, or how
+its state is encoded — for the latter see BRC-X.
 
-⚠ It bounds an agent's on-chain actions — writing, paying, proving — **not its thinking**. Overclaim and a
-reader will correctly object that the agent is not running on Bitcoin. Stated precisely the claim is
-stronger: *the agent thinks wherever it likes; it can only act within the covenant.* A battery does not make
-an agent correct, honest or safe to deploy; it removes one capability and leaves every other question
-untouched.
+⚠ It bounds an agent's on-chain **actions**, not its reasoning: *the agent thinks wherever it likes; it can
+only act within the covenant.* A battery does not make an agent correct, honest or safe to deploy.
 
-**A battery is the first rung of a ladder** and deliberately the most restrictive. Where an agent must
-genuinely pay somebody, the same technique extends:
-
-```
-1. battery       may only advance its own program, paying its own fee   ← THIS STANDARD
-2. payee-bound   may pay only recipients enumerated when it was built
-3. rate-bound    caps value per spend, enforced in script
-```
-
-⚠ Rung 3 caps *per spend*, which is what `MAX_FEE` already is. Capping per unit of *time* is not available:
-a covenant has no clock but `nLockTime`, and gating on it restricts honest use identically (§4.1).
-
-Rungs 2 and 3 are out of scope here. A reader who needs them must not reach them by relaxing §4, which is
-what makes rung 1 safe.
+This is the most restrictive rung of a ladder; `payee-bound` and `rate-bound` covenants are separate proposals,
+and MUST NOT be reached by relaxing §4. Capping value *per unit of time* is unavailable — a covenant has no
+clock but `nLockTime`, and gating on it restricts honest use identically.
 
 ## Specification
 
-The key words "MUST", "MUST NOT", "SHOULD" and "MAY" are to be interpreted as described in RFC 2119.
+The key words "MUST", "MUST NOT", "SHOULD" and "MAY" are as described in RFC 2119.
 
 ### 1. Terminology
 
-- **Fuel** — the satoshi value carried by the covenant's output, and the only thing that pays for its steps.
+- **Fuel** — the satoshi value carried by the covenant's output; the only thing that pays for its steps.
 - **Tick** — one spend that performs one step and re-creates the covenant with the advanced state.
-- **Computation trace** — the ordered ticks from genesis to the unspent tip. Each hop is a step whose
-  correctness the covenant enforced as a condition of the hop existing, so the trace is a proof to be
-  walked rather than a log to be trusted.
-- **`V`** — the fuel carried by the output being spent, read by the covenant from the preimage.
-- **`MAX_FEE`** — the permanent ceiling on how much fuel one tick may consume.
-- **Ticker** — whoever broadcasts a tick. Risks nothing and gains nothing.
-- **Sponsor** — whoever adds fuel.
+- **`V`** — the fuel carried by the output being spent, read from the preimage.
+- **`MAX_FEE`** — the ceiling on how much fuel one tick may consume.
 - **Flat** — a covenant whose remaining fuel can no longer pay for a tick.
 
 Two roles are OPTIONAL; a covenant MAY bind either, both or neither to a public key:
 
-- **Driver** — a party whose signature is required to *advance* the covenant. Authority to act, nothing else.
-- **Owner** — a party whose signature is honoured for rights over the instance itself, such as retiring it
-  and recovering what it holds. Authority that reaches value.
+- **Driver** — signature required to *advance* the covenant. Authority to act, nothing else.
+- **Owner** — signature honoured for rights over the instance itself, such as retiring it and recovering what
+  it holds. Authority that reaches value.
 
 ### 2. The tick
 
@@ -90,513 +67,160 @@ in0    the covenant           unlocking script = the preimage
 out0   the covenant, quined, state advanced, value ≥ V − MAX_FEE
 ```
 
-`out0` MUST be first. Later outputs MAY be present (§6) and the covenant MUST NOT constrain them beyond
-committing to them in the sighash.
+`out0` MUST be first; later outputs MAY be present and MUST NOT be constrained beyond being committed to in the
+sighash. A tick MUST NOT require a funding input — the moment it does, the ticker needs a wallet.
 
-⚠ A tick MUST NOT require a funding input. The moment it does, the ticker needs a wallet.
-
-#### 2.1 Composing two conforming covenants in one transaction
-
-⚠ **Pinning the successor to `out0` is what makes a tick verifiable, and it is also a composability trap that
-is invisible until the transaction you need cannot exist.** Two covenants that each rebuild themselves at
-output 0 can never appear in the same transaction — there is one output 0 — so any interaction requiring both
-to move at once is unconstructible. This is not a rule that can be relaxed later; it is discovered at the
-moment a second covenant is written, by which time the first is deployed.
-
-Where two conforming covenants must transact together, one of them MUST be built to tolerate an output offset:
-
-- one covenant keeps `out0` and is unchanged
-- the other verifies its own successor at a **fixed offset** it carries as a prefix, rather than at output 0
-- the offset-tolerant covenant recognises its counterparty **by shape** — a known head, a known run of pinned
-  push opcodes, a known tail — rather than by a hash of the counterparty's script at rest, because a
-  counterparty carrying state has no single resting form to hash
-
-⇒ The cost measured on the reference implementation was about 150 bytes in the offset-tolerant covenant.
-
-⚠ The failure this avoids is not primarily technical. Faced with a transaction that could not exist, the
-specification was for a time **redescribed** to match what had been built, and sixteen tests then passed
-against a machine that did the wrong job while the one test that described the real requirement was left
-failing as evidence the specification was at fault. **When the build cannot do what the specification says,
-that is a bug in the build.**
+⚠ Two covenants that each rebuild at output 0 cannot share a transaction. Where they must interact, one MUST
+tolerate a fixed output offset and recognise its counterparty by script *shape*, not by a hash of a script at
+rest.
 
 ### 3. Authorisation, ownership and control
 
-The covenant MUST authorise the advance by validating the sighash preimage supplied in the unlocking script,
-so the successor state is enforced by the script rather than asserted by a signer.
+The covenant MUST authorise the advance by validating the preimage supplied in the unlocking script, so the
+successor state is enforced by the script rather than asserted by a signer. Beyond that, ownership and control
+by public key are both permitted:
 
-Beyond that, **ownership and control by public key are both permitted**:
-
-| configuration | who may advance | who has rights over value |
+| configuration | who may advance | rights over value |
 |---|---|---|
 | ownerless | anybody | nobody — fuel can only become mining fees |
 | controlled | one keyed driver | nobody |
 | owned | anybody, or one keyed driver | a keyed owner, per the rights the script grants |
 
-Ownerless is the strongest form and the easiest to reason about: irreversibly nobody's, with no upgrade,
-pause or recovery. Owned trades some of that for operational reality, which is often correct — a fleet
-operator who cannot retire a vehicle owns a liability.
+**Authority MUST be enumerated in the script:**
 
-**In every configuration, authority MUST be enumerated in the script:**
-
-1. A driver's authority MUST be limited to advancing the covenant. A driver signature MUST NOT be sufficient
-   to direct value to an output of the signer's choosing.
-2. Any authority that *can* direct value MUST be gated by a key distinct from the driver's whenever the
-   driving credential is held by someone other than the owner.
+1. A driver's authority MUST be limited to advancing the covenant, and MUST NOT suffice to direct value to an
+   output of the signer's choosing.
+2. Any authority that *can* direct value MUST be gated by a key **distinct from the driver's** whenever the
+   driving credential is held by someone other than the owner. One key doing both jobs turns a driving
+   credential into a spending credential the moment it is issued: a retirement signed `SIGHASH_ALL` pays
+   whatever outputs the signer chose.
 3. No configuration grants an authority the script does not spell out. There is no implicit administrator.
 
-⚠ **Requirement 2 is the one that fails by accident.** If one key both advances the covenant and authorises
-its retirement, issuing that key to an agent issues the retirement power too — and a retirement signed
-`SIGHASH_ALL` pays whatever outputs the signer chose. The covenant is sound in that scenario; the key
-issuance is the mistake. Bind the roles to different keys before the driving credential leaves your custody.
+⚠ A conforming script *contains* a signature opcode — `OP_PUSH_TX` is built from `OP_CHECKSIG` against a
+constant whose scalar is published — so counting signature opcodes is not a conformance test. The property is
+**"no secret exists"**, and it MUST be tested by parsing script chunks rather than searching hex.
 
-⚠ **A conforming script contains a signature opcode, and counting them is not a conformance test.** The
-preimage check is normally built *from* `OP_CHECKSIG`: the script derives a signature over the pushed
-preimage using a constant scalar whose value is published, and `OP_CHECKSIG` recomputes the sighash from the
-real transaction, so the spend validates only if the preimage is genuine. State the property as *"no secret
-exists"*, never as *"no signature opcodes"* — the second is checkable and false.
+### 4. The value rule and the top-up
 
-⚠ **And test it by parsing, never by searching the hex.** A DER signature is not a byte pattern that can be
-grepped for: a locking script of this kind is mostly preimage material — hashes, txids, derived constants —
-whose bytes are effectively random, so any short pattern occurs by chance. Searching for `3044`/`3045` in the
-hex was **measured producing a false positive in ~1.6% of runs**: often enough to be dismissed as a fluke, and
-often enough to send someone hunting a signature bug that was never there. Walk the parsed chunks instead. ⇒ A
-detector MUST also be provoked in the same test — sign something real and require it to be reported — or
-“no signature found” is indistinguishable from “cannot find signatures”.
+The covenant MUST enforce `out0.value ≥ V − MAX_FEE`. It MUST be a **floor**, MUST NOT be an equality.
 
-⚠ Whatever the genesis does not provide for, nobody can add to *that instance* later. The remedy is to
-supersede it — mint a corrected covenant and stop fuelling the old one (§5c) — which costs the original's
-identity and leaves it dormant rather than gone. Everything an instance will ever do MUST therefore be
-correct when it is broadcast; §10 records a constant that could not be fixed and forced exactly that.
+Under a floor, a transaction that *increases* the fuel is already a valid tick, so a top-up needs no separate
+code path, no privileged key and no second script. ⚠ Under an equality the fuel can only fall: the covenant can
+never be refuelled by anyone and dies permanently on reaching `MAX_FEE`, with no symptom until it stops.
 
-### 4. The value rule
+The covenant SHOULD use `SIGHASH_ANYONECANPAY | ALL | FORKID` (`0xc1`), so a sponsor MAY add a funding input
+without invalidating the covenant's introspection while `out0` stays pinned.
 
-The covenant MUST enforce `out0.value ≥ V − MAX_FEE`. It MUST be a **floor** and MUST NOT be an equality.
-
-This is the most consequential line in the standard. Under a floor, a transaction that *increases* the fuel is
-already a valid tick, so a top-up needs no separate code path, no privileged key and no second script —
-adding fuel and advancing the state are one atomic operation.
-
-⚠ Under an equality the fuel can only fall. The covenant can never be refuelled by anyone, and it dies
-permanently on reaching `MAX_FEE`. This is unamendable and has no symptom until the day it stops.
-
-`MAX_FEE` bounds the worst case; it is not the price. An honest ticker pays only what the network requires.
-
-#### 4.1 What a hostile stranger can do — griefing, not theft
-
-If anybody may advance the covenant, then anybody may advance it **repeatedly and maliciously**, consuming up
-to `MAX_FEE` each time until it is flat. A standard that did not say so would be concealing its own threat
-model. The precise claim is narrower than it sounds, and the distinction is the whole security story:
-
-> **Anyone can empty it. Nobody can take it.**
-
-Every satoshi that leaves is bounded by §4 and lands where the script says, which is never an address of the
-attacker's choosing. The attacker spends their own time and bandwidth and receives nothing. This has been
-measured on a sibling covenant — a tank of 100,000 satoshis, attacked with no key, no coin and nothing funded:
-95,815 was forced out into destinations only the owner could realise, 4,185 went to miners, and **zero reached
-the attacker**. The owner recovered 93,815; the attack cost 6.2%, all of it mining fees.
-
-★ **And for a battery specifically, the vector very nearly closes itself.** Where the covenant's only possible
-output is its own progress, an attacker who drains it has *performed the work it was funded for* — faster than
-its owner intended, and at their own expense. Griefing is only meaningfully hostile where the fuel could have
-served a purpose the owner valued more than acceleration, as with a reservoir that funds other covenants.
-
-⚠ **Mitigation is operational, not scriptable.** Fund lightly and top up: an instance is
-`balance ÷ MAX_FEE` steps from flat, and §4 makes refuelling free of ceremony precisely so that keeping the
-balance small costs nothing. This is the correct reading of "fund small, top up" — **a griefing limit, not a
-theft limit.**
-
-⚠ **A rate limit cannot substitute for it.** A covenant has no clock. The only temporal fact available to it is
-`nLockTime`, and gating advances on that throttles the honest driver exactly as much as the attacker. An
-implementation MUST NOT claim a time-based rate limit it cannot enforce.
+⚠ **The threat model: anyone can empty it; nobody can take it.** Anybody who may advance the covenant may
+advance it maliciously until it is flat, but every satoshi that leaves is bounded by this rule and lands where
+the script says — never at an address of the attacker's choosing. Where the covenant's only output is its own
+progress, draining it performs the work it was funded for. Mitigation is operational: **fund lightly and top
+up.** That is a griefing limit, not a theft limit.
 
 ### 5. The fee ceiling
 
-⚠⚠ **What is at stake here is money, and the amount is not chosen by the author.**
-
-§4 places no upper bound on what an instance may come to hold: a top-up is just another advance, so anybody
-may add fuel at any time, without limit and without asking. The exposure created by a design error is
-therefore not fixed at genesis — it is whatever the instance accumulates over its whole life, and it grows in
-direct proportion to the covenant's success. A flaw in something nobody funded costs nothing. The identical
-flaw in something that worked, and was funded for years by people who trusted it, costs all of it.
-
-The remedies set out below are all **lossy**, and none of them is a repair:
-
-- superseding an instance forfeits its identity and commits its remaining fuel to work nobody wants (c)
-- burning recovers the fuel but requires a key decided at genesis, and forecloses being ownerless (d)
-- an owner-updatable ceiling avoids both, and gives up the property that made the design worth having (b)
-
-⇒ So the choice of these constants is not configuration and it is not a quality concern. **It is a custody
-decision**, taken once, on behalf of everyone who will ever fund the instance — most of whom will never read
-the script and are relying on the author having done so. Treat a genesis broadcast the way a mint treats a
-die, not the way software treats a release.
-
-However `MAX_FEE` is carried, it MUST be derived by **serializing a real worst-case spend and measuring it**,
-then applying the relay rate. It MUST NOT be hand-counted, inferred from the locking script alone, or copied
-from another covenant. That requirement holds in every configuration, because it is the step that has
-actually gone wrong in practice — twice, in the reference implementation's own history, both times with every
-test passing.
+`MAX_FEE` MUST be derived by **serializing a real worst-case spend and measuring it**, then applying the relay
+rate with modest headroom. It MUST NOT be hand-counted, inferred from the locking script alone, or copied from
+another covenant. It MUST cover the worst spend **any legal variant** can produce, and MUST be measured on the
+transaction the covenant **exists for** rather than the simplest one it can make.
 
 ```
-MAX_FEE ≥ ceil(worstCaseTickBytes × relayRate) × headroom       headroom ~1%
+MAX_FEE ≥ ceil(worstCaseTickBytes × relayRate) × headroom
 ```
 
-⚠ **Set below what the network accepts for the worst case, the covenant is dead on arrival**: no tick can
-ever pay enough to relay, and every satoshi it holds can only ever be spent by a tick that cannot happen.
-Serializing a real spend is the only permitted method because it is the only one observed to be right.
+⚠ Set below what the network accepts, no tick can ever pay enough to relay and every satoshi the instance holds
+becomes unreachable. `MAX_FEE` MAY be a script literal, which is permanent, or a field an owner key may update,
+which forecloses the ownerless configuration; implementations SHOULD state which. A wrong literal is escaped
+only by **superseding** the instance — mint a corrected covenant, stop fuelling the old one — needing no key,
+but forfeiting the original's identity and leaving it dormant rather than gone, since §7 lets anyone revive it.
 
-**How the ceiling is carried, and how a wrong one is escaped.** Two mechanisms for carrying it, and two
-routes out — the second of which requires nothing at all:
+⚠ **This is a custody decision, not configuration.** §4 places no upper bound on what an instance may come to
+hold, so the exposure from an error is not fixed at genesis: it is whatever the instance accumulates, growing
+with the covenant's success.
 
-| | | what it costs |
-|---|---|---|
-| **a** | a literal baked into the script | cannot be amended in place; escape via (c) or (d) |
-| **b** | a field an owner key may update | amendable in place, at the cost of the ownerless configuration |
-| **c** | **supersede: mint a corrected instance, leave the old unfunded** | needs no key; the old instance's fuel is **dedicated, not lost** — see below |
-| **d** | burn the old instance | **recovers that fuel to the owner** — requires an owner path, so the instance can never have been ownerless |
+⚠ **A bug strands fuel as effectively as a bad constant** — a state no spend can satisfy need only be
+*reachable*, and until reached it is indistinguishable from working code. This is hard to prevent because a
+covenant of useful size cannot be read back, so what gets verified is a mental model of the script, and one
+modification moves every offset and depth behind it. Errors therefore surface after minting and funding, when
+nothing can be altered. ⇒ **An implementation MUST be able to read its covenant back, not merely write one.**
 
-**(a)** is the strongest and what the deployed instances use. Nothing can amend it, which is the point: no
-key's compromise can change what a tick may cost.
-
-**(b)** is permitted and is an **owner** authority under §3, so it inherits the key-separation rule and MUST
-NOT be reachable by a driver credential. ⚠ It is not a theft vector — the covenant still cannot direct value
-to a party — but a ticker who also mines captures the fee, so an unnecessarily high ceiling extracts rather
-than merely wastes. An implementation offering (b) SHOULD bound the update, by a maximum or a rate limit or
-both, and SHOULD state that the ownerless configuration is no longer available to it.
-
-**(c) is available in every configuration and requires no authority whatsoever.** Mint a corrected instance
-and stop fuelling the flawed one. It goes flat and stays flat. Nothing is signed, no retirement path need
-exist, and it does not depend on the old covenant cooperating — which matters, because a genuinely ownerless
-covenant *has* no path to invoke.
-
-⚠ **Its fuel is not stranded, and calling it stranded is the common error.** A battery has no terminal state:
-every satoshi in it remains spendable *by advancing the covenant*, so an abandoned instance can be ticked to
-flat by any stranger and its whole balance becomes mining fees doing exactly the work it was funded for.
-Nothing is destroyed and nothing is locked away. The value is **dedicated** rather than recoverable, which is
-a different thing from lost — *ticks forward or waits for recharge* is a complete life cycle with nothing
-missing from it.
-
-⚠ **What genuinely strands value is a terminal state, and that is a separate design error from a wrong
-constant.** A covenant with a state from which no spend is possible — a phase machine that refuses to advance
-past "finished", say — locks its remaining balance permanently, and every node carries that output for as long
-as the network exists. One such output is a curiosity. One per race, per mint or per use is **unbounded
-growth**, and nothing is demonstrated by the thousandth headstone that was not already said by the first.
-
-⚠ **Abandonment is dormancy, not deletion, and §8 is what makes that true.** A flat covenant resumes on a
-top-up from anyone, so an abandoned instance's behaviour stays permanently *available*: a stranger may refuel
-a superseded covenant years later and it will run exactly as written. A published covenant cannot be
-withdrawn, only left unfed.
-
-**(d) burning is how that fuel is recovered to its owner instead**, and that is its purpose rather than
-tidiness. The
-signature that authorises it commits to every output of the transaction, so the owner states where the value
-goes — ordinarily back to their own wallet. This is why instances built for testing SHOULD be burnable: a
-development cycle mints covenants that are *expected* to be wrong, and without a burn every one of them takes
-its funding with it.
-
-Whether an instance should have a burn path at all, and how to build one without handing it to a stranger, is
-§8.
-
-⇒ So (a) is not "unamendable" in the sense of unrecoverable. It is unamendable **in place**, and the recovery
-is to supersede rather than to edit. Implementations SHOULD say which of these they chose, because
-a reader cannot tell (a) from (b) without reading the script.
-
-#### The requirement that is hard to satisfy, and why
-
-Everything above reduces to one instruction — *the covenant must be right before it is minted and funded* —
-and stating it is not the same as being able to obey it. The difficulty is not arithmetic. It is that a
-covenant of any real size **cannot be read back**, so the thing being verified is a mental model of the script
-rather than the script:
-
-- A working covenant is a few thousand opcodes of stack manipulation with no names, no types and no
-  structure a reader can hold. Reading one by eye is not practical for anybody.
-- **A single modification to a complex script invalidates the model of it that was being checked** — and the
-  model is what the confidence rested on. Change one branch and the offsets, depths and derived constants
-  behind it all move. Whoever or whatever holds the model loses it exactly when the change is made, and a
-  script long enough to be useful is long enough to exceed what can be held at once.
-- So the covenant gets proved correct, in good faith, and is *then* found to be wrong — after minting, after
-  funding, at the one moment when nothing can be changed.
-
-⇒ **Therefore an implementation of this standard needs a way to read its covenant back, not merely a way to
-write one.** A reader that renders a locking script as something a human can check turns "we believe this is
-right" into "this is what it says", and it is the difference between a permanent constant that was verified and
-one that was intended. Implementations SHOULD obtain one before their first genesis rather than after their
-first loss; see the tooling note under Implementations.
-
-⚠ This is offered as the load-bearing lesson of the reference implementation rather than as a preference. The
-requirement in this section was satisfied twice by a test suite that passed while the bound underneath it was
-below the relay floor.
-
-Three sources of size variation, of which **only the first threatens the bound**:
-
-1. **Script variants — dangerous.** Every rule that emits opcodes makes the cheapest spend dearer to mine. A
-   variant whose script grew while its ceiling did not is a covenant no node will relay, and it looks healthy
-   until the first refusal. The ceiling MUST be re-derived per variant, from a single named measurement
-   shared by the builder and by whatever checks the builder.
-   ⚠ It MUST cover the worst spend **any legal variant** can produce, not the variant that happened to be
-   measured. A bound derived only from one configuration sat at 97.2 sat/KB against a 100 floor, with every
-   test green, because a later change made a *different* configuration the larger one.
-   ⚠ And it MUST be measured on the transaction the covenant **exists for**. A ceiling derived from a simple
-   spend was 61.8 sat/KB on the composite spend that was the covenant's actual purpose — in which a second
-   covenant is also an input, and its whole script is paid for again inside its own preimage.
-2. **Extra inputs and outputs — safe.** A sponsored top-up is larger, but the sponsor funds the difference.
-   The ceiling bounds what leaves the *covenant*, not what the transaction pays.
-3. **Variable-length payload — safe.** Free text in an `OP_RETURN` beside a contribution rides on the
-   sponsor's transaction, so arbitrary user input cannot threaten a permanent constant.
-
-⚠ Drift in the safe direction is also a defect: a ceiling a few bytes high overpays every miner forever,
-silently. A fee check SHOULD fail on drift in *either* direction.
-
-### 6. Sighash scope and sponsorship
-
-The covenant SHOULD use `SIGHASH_ANYONECANPAY | ALL | FORKID` (`0xc1`). `ANYONECANPAY` excludes other inputs
-from the preimage, so a sponsor MAY add a funding input without invalidating the covenant's introspection;
-`ALL` still commits every output, so `out0` stays pinned.
-
-A top-up is therefore one transaction that adds fuel, advances the state, and MAY carry trailing outputs —
-change, or a record of the contribution.
-
-⚠ Any record carried that way is permanent and unmoderatable. Implementations displaying it SHOULD render it
-as inert text and MUST NOT turn it into a live link.
-
-### 7. Bounded steps
+### 6. Bounded steps
 
 Each tick MUST perform a step whose worst case is known when the script is written, because §5 depends on it.
-The covenant MUST recompute the successor state from the state in its own `scriptCode` and MUST refuse any
-other, so a ticker chooses *whether* to advance it, never *how*.
+The covenant MUST recompute the successor from the state in its own `scriptCode` and MUST refuse any other, so
+a ticker chooses *whether* to advance it, never *how*.
 
-The computation as a whole need not be bounded. **The loop is not in the script, it is in the trace**: each
-iteration is a separate transaction, separately paid for and separately verified. Nothing here gives Script a
-backward jump; the trace shows where the loop went.
+The whole computation need not be bounded: **the loop is not in the script, it is in the trace.** Nothing here
+gives Script a backward jump.
 
-⚠ An external reference implementation that disagrees with the script by one unit cannot advance the
-covenant at all, because the covenant recomputes and refuses. That makes the reference's arithmetic
-normative in practice, so it SHOULD be verified against exact integer arithmetic rather than floating point,
-and its operation order stated wherever truncation makes it observable.
+### 7. Halting, resumption, and destruction
 
-### 8. Halting, resumption, and whether to allow destruction
-
-When `V < MAX_FEE` the covenant is **flat**. A flat covenant MUST NOT be treated as terminated: its state is
-intact in its locking script, and a top-up under §4 resumes it at exactly the step it stopped on.
-Implementations MUST NOT add an "expired" state. Remaining steps are `floor(V / MAX_FEE)`, computable by any
-observer from the UTXO alone.
-
-**Ticks forward, or waits for recharge.** That is a complete life cycle, and recognising it as complete is
-what makes the next decision answerable.
-
-#### 8.1 Whether the covenant needs a way to be destroyed
+When `V < MAX_FEE` the covenant is **flat**, and a flat covenant MUST NOT be treated as terminated: its state is
+intact and a top-up resumes it at exactly the step it stopped on. Remaining steps are `floor(V / MAX_FEE)`.
+*Ticks forward, or waits for recharge* is a complete life cycle.
 
 > **A covenant needs a burn path UNLESS permanence is the point of it.**
 
-The test is *not* "can the money come back". It is **bounded and intentional** against **unbounded and
-incidental**:
+The test is not "can the money come back" but **bounded and intentional** against **unbounded and incidental**:
+one immortal output on purpose is a monument, one per race or per mint is a leak every node carries forever. The
+quantity is the number of unspendable outputs, not the value in them.
 
-```
-BOUNDED + INTENTIONAL     one output, forever, on purpose      → a MONUMENT.  No burn. It is the point.
-UNBOUNDED + INCIDENTAL    one per race, per mint, per use      → a LEAK.      It MUST be burnable.
-```
+⚠ **An ownerless instance MUST NOT have a burn path.** A burn needs a signature, a signature needs an owner, and
+an owner destroys the property the design exists for; the combination is not a compromise but a covenant free to
+the first passer-by. Where a burn is warranted the instance is **owned** under §3 and MUST be built so from
+genesis; its owner key MUST be written once, at genesis, and MUST NOT be writable again, or a stranger writes
+their own key into an empty field and burns it for the fuel. The branch MUST sit below the owner check and MUST
+re-verify that the instance is claimed, since an unwritten owner field skips the signature check rather than
+failing it.
 
-A single immortal artefact is a monument. One per use is a leak — nothing is demonstrated by the thousandth
-headstone that was not already said by the first, and every node carries all of them for as long as the
-network exists.
+### 8. Conformance
 
-⚠ **Note which quantity the test is about.** It is not the *value* locked but the *number of outputs* created.
-A covenant with a terminal state — a phase machine that refuses to advance past "finished" — leaves an output
-nobody can ever spend. One is a curiosity; one per use is unbounded growth in every node's UTXO set.
-
-A battery has no terminal state *by design*, which is why abandoning a correct one costs nothing structurally:
-its fuel stays spendable by advancing it, and any stranger may tick it to flat.
-
-⚠⚠ **That is a property of the design, not a guarantee about the artefact. A bug strands fuel exactly as
-effectively as a terminal state does, and it does not have to be intended — it only has to be reachable.** A
-state machine with a condition no spend can satisfy locks its whole balance the moment it arrives there, and
-until then it is indistinguishable from a covenant that works. Every satoshi anybody has contributed is inside
-it. This is not a hypothetical failure mode; it is the one that has to be designed against, and §5's
-requirement exists because of it.
-
-#### 8.2 Why an ownerless covenant MUST NOT have one
-
-A burn needs a signature; a signature needs an owner; an owner destroys *"no key to steal"*, which is the
-entire thesis. So the two cannot be combined, and attempting it does not produce a compromise — it produces a
-covenant that is **free to the first passer-by who reads the script**.
-
-An ownerless instance MUST NOT have a burn path. Where one is warranted by §8.1, the instance is an **owned**
-instance under §3 and MUST be built that way from genesis.
-
-⚠ **Recorded so it is not re-proposed:** *"when the value falls below one tick, let anybody sweep it."* It is
-genuinely keyless, and it is still wrong — it makes draining a battery profitable, and it converts a monument
-into scrap by giving it an ending it should not have.
-
-#### 8.3 Building a burn path that is not a free sweep
-
-Where §8.1 requires one, the burn itself enforces **nothing**: the owner's signature is `SIGHASH_ALL`, so it
-already commits to every output. The owner has said where the money goes; there is nothing left for the
-covenant to check and no output of its own to re-create.
-
-Four guards make that safe, and all four matter:
-
-1. The burn flag MUST sit **deepest** in the unlocking script, so that adding it moves no existing depth.
-2. Its depth MUST be **derived** from the field list rather than written down, or the two drift apart.
-3. The branch MUST sit **below the owner check**, so the signature is verified before the branch is read and a
-   burn is unforgeable.
-4. It MUST **re-verify that the instance is claimed**. An unclaimed instance's owner field is zero bytes, the
-   signature check above it is skipped rather than failed, and an unguarded burn then hands a passer-by the
-   whole balance in one transaction.
-
-⚠ Guard 4 is not hypothetical. **Load, own, burn:** measured against a real deployment before the fix existed,
-a passer-by wrote their own key into an unwritten owner field, became the owner, and could then burn the
-instance and walk off with its fuel. The field MUST be written once, at genesis, and MUST NOT be writable
-again.
-
-★ **Test the refusals harder than the acceptances, and always include a control with the burn flag withheld.**
-Without that control a branch that does nothing at all passes every other test.
-
-⚠ **A rule no test has provoked is a rule no test has examined.** In Script a refusal looks identical whether
-it came from the rule under test or from something else entirely, so a test that never reached its rule passes
-exactly as convincingly as one that did. A conforming implementation SHOULD assert not merely that an invalid
-spend was refused but that it was refused *for the stated reason*, and treat anything that stays green across a
-change with suspicion rather than relief. **A passing check is a hypothesis wearing a costume.**
-
-### 9. State
-
-A covenant SHOULD carry its state as fixed-width fields in its own locking script per BRC-X, under the
-three-push header defined there. This standard reserves no record types; the instance in §10 uses `0x07`.
-
-### 10. Deployed evidence
-
-⚠ **No delivery vehicle has been built.** The title names the use case the mechanism is for. What exists on
-mainnet is a keyless computation, and a **quarter-mile drag race** as a vehicle proof of concept. Hold the
-claim to what those demonstrate.
-
-Every figure below was measured from the chain, not read out of the implementation.
-
-**The battery** performs one Mandelbrot iteration per tick, in Script, in 2³² fixed point.
-
-```
-genesis    18e3193687078c40ee9a069a419d00f7b2a9c4374fe66e8d2b8a59d424711edd
-           block 962,140 · 2026-08-13 · out0 = 2,100 sat · record 0x07
-lock       1,428 B · 9 fields · 39 B of state · scope 0xc1 · MAX_FEE 314
-tick 1     289e4a75f05c6c154387a512ae2f0f6b42cc84a4f74e674294f0edb918218c4e
-           3,092 B · 1 in / 1 out · unlocking 1,600 B · fee 310 sat = 100.26 sat/KB
-```
-
-`MAX_FEE` 314 against that measured 3,092-byte spend puts the ceiling at 101.6 sat/KB, ~1.3% over the floor.
-
-Walking the trace twenty steps reaches `b134dc9f…` in block 962,146, whose locking script is
-**byte-identical** to the reference implementation replayed twenty times from genesis. Reading the twentieth
-step off the trace and computing it locally are two routes to one answer, and the first costs no arithmetic.
-
-⚠ The two directions are not symmetric. *Verifying* walks **backward** using only the transactions and needs
-no index. *Locating the tip* walks **forward**, asking what spent each output — a question a transaction does
-not answer. The tip is the step nothing has spent yet.
-
-**§5's cases, on chain.** Thirteen consecutive pure ticks measured 3,092 B each, spread zero, fee 310 sat —
-constant because fixed-width state makes the lock, and so the preimage, the same length every time. One
-sponsored top-up measured 3,483 B, 2 in / 3 out, **fee 349 sat against a `MAX_FEE` of 314**, violating
-nothing: the sponsor paid the difference. A reader who assumes the ceiling bounds the transaction fee will
-wrongly conclude that spend should have been refused.
-
-**The vehicle** does have size-varying moves: worst case **3,909 B** by serializing every variant, 3,957 for
-a variant carrying one extra rule, with the ceiling re-derived for each. The completed quarter mile is
-`ac49ed93…` — 402 m, 46 transactions, 166 KB, a 1,674-byte lock carrying 13 fields in 98 B under BRC-X.
-
-⚠ The vehicle's role separation is **specified but only partly built**. The design assigns an owner signature
-to configuring a vehicle and a driver signature to operating it; the deployed proof of concept carries one
-key field serving both, which is correct for a driver operating their own vehicle and is not the two-key
-arrangement §3 requirement 2 obliges for delegation. Neither that design nor this standard should be read as
-describing what is deployed.
-
-**The predecessor is the clearest illustration of §3 and §5.** An earlier battery was minted a day earlier
-with an opening iteration cap of 6 — too low, so it drew a blob rather than a Mandelbrot. The cap is a script
-constant and no key exists that could amend it, so it could not be patched, paused or recalled. A corrected
-covenant had to be minted as a separate genesis; the flawed one still runs, advanceable by anyone,
-unstoppable by its author, draining to flat.
-
-★ **That is §5's option (c) in the wild, and it shows precisely what the escape hatch does and does not
-cost.** Nothing was lost and nothing was stolen. It was never burnt, either — it is simply not being funded,
-which is the whole of the remedy. What it cost was identity: the corrected instance is a different covenant
-with a different txid, and references to the old one do not follow.
-
-⚠ And it is dormant rather than gone. Anyone may fuel that first battery tomorrow and it will resume drawing
-its blob, correctly, from the exact iteration it stopped on — because §8 guarantees exactly that. A published
-covenant cannot be withdrawn; it can only be left alone. Implementations SHOULD expect their first genesis to
-be wrong about something, SHOULD treat every baked constant as the whole of the engineering work rather than
-as configuration, and SHOULD decide before minting whether they can live with a flawed instance remaining
-revivable in public.
-
-Both instances declare `BRC-226` in their genesis `OP_RETURN`. That is a conformance claim, not a number this
-proposal requests: a battery *is* a BRC-226 covenant, and what this document adds is the funding model and
-the authority rules on top.
-
-The genesis also publishes the field layout, so the artefact is rebuildable from the chain with no reference
-to any website:
-
-```
-BITCOIN BATTERY v1|cr,ci,zr,zi,i,step,cx,cy,mx|widths 5,5,5,5,2,5,5,5,2|
-sign-mag LE|1=2^32|mul first div last|grid 3840x2160|mx0 128 k 128 cap 32767|
-maxfee 314|ink esc+1-log2(log abs z) mod 32
-```
-
-### 11. Conformance
-
-1. A tick is one input and one output, carries no signature over a secret, and needs no funding input.
-   (§2, §3)
+1. A tick is one input, one output, requires no funding input, and no secret key material exists. (§2, §3)
 2. The value rule is a floor, so a top-up is a valid tick with no separate code path. (§4)
-3. `MAX_FEE` is a script literal derived by serializing and measuring a worst-case spend, with headroom. (§5)
-4. The covenant recomputes the successor state itself and refuses any other. (§7)
-5. A flat covenant resumes at its exact prior step on top-up. (§8)
+3. `MAX_FEE` is derived by serializing and measuring a worst-case spend, covering every legal variant. (§5)
+4. The covenant recomputes the successor itself and refuses any other. (§6)
+5. A flat covenant resumes at its exact prior step on top-up. (§7)
 6. Authority is enumerated in the script, and any authority that can direct value is gated by a key distinct
    from the driver's once the driving credential is delegated. (§3)
 
-⚠ Item 3 is the one whose cost is paid before anyone notices, and the one whose cost is denominated in money
-rather than in reputation. A `MAX_FEE` below the relay floor yields an instance that can never move again,
-holding everything anybody ever contributed to it. Where the ceiling is a baked literal (§5a) there is no
-edit, only a re-mint that abandons both the funds and the identity. The bound MUST therefore be derived from a
-serialized spend before the genesis is broadcast — not before release, not before review: **before the
-genesis**, because that transaction is the last moment at which any of it can be changed.
+⚠ Item 3 cannot be fixed later and MUST be satisfied **before the genesis is broadcast** — that transaction is
+the last moment anything can change. ★ Test the refusals harder than the acceptances, and include a control that
+withholds the flag under test: **a rule no test has provoked is a rule no test has examined.**
 
 ## Implementations
 
-| covenant | genesis | lock | state | tick | fee |
-|---|---|---|---|---|---|
-| Bitcoin Battery | `18e31936…` | 1,428 B | 9 fields / 39 B | 3,092 B | 310 sat |
-| Vehicle (proof of concept) | `ac49ed93…` | 1,674 B | 13 fields / 98 B | ≤ 3,909 B | — |
+Deployed on BSV mainnet; every figure measured from the chain.
 
-The reference implementation and its test suite are published on chain, so this document cites a payload
-rather than a URL:
+| | genesis | lock | state | tick | fee |
+|---|---|---|---|---|---|
+| Bitcoin Battery — one Mandelbrot iteration per tick | `18e31936…` | 1,428 B | 9 fields / 39 B | 3,092 B | 310 sat |
+| Vehicle proof of concept — a quarter-mile drag race | `ac49ed93…` | 1,674 B | 13 fields / 98 B | ≤ 3,909 B | — |
+
+The battery's `MAX_FEE` is 314 against that measured 3,092-byte spend: 101.6 sat/KB, ~1.3% over the floor.
+Walking its trace twenty steps reaches `b134dc9f…`, whose locking script is byte-identical to the reference
+implementation replayed twenty times from genesis. One sponsored top-up measured 3,483 B paying 349 satoshis —
+legitimately above `MAX_FEE`, because the sponsor funded the difference.
+
+⚠ **No delivery vehicle has been built.** The title names the use case the mechanism is for.
+
+The reference implementation and its test suite are published on chain, so this document cites a payload rather
+than a URL — verified by retrieving the archive and comparing it byte for byte:
 
 ```
 source bundle   078a45523f5ba0597aeffe01296d0543566defc20a56c8b4de109ed783bbab17   138,642 B
 ```
 
-It was verified by retrieving the archive from the chain and comparing it byte for byte against the local
-copy — sixteen files, all CRCs intact.
-
-**Tooling — how the reader described in §5 was actually obtained.** The problem it solves is not convenience.
-A covenant is a few thousand opcodes with no names and no structure; a permanent constant is a two-byte push
-somewhere inside it; and one modification moves every offset and depth that follows, so whatever model of the
-script was being checked is invalidated by the very change it was meant to verify.
-
-The answer was to make the script readable **in both directions**:
-
-- a deployed locking script is fetched from the chain and rendered as a short program in a BASIC dialect
-- a program in that dialect compiles forward into Script
-- so the two representations can be checked against each other, and a disagreement between the name model and
-  the interpreter is itself the bug report
-
-Measured on the largest hand-written covenant in the family: **1,108 opcodes read back as 253 lines**, and
-15 of 15 decompiled programs recompiled, 9 of them byte-identically. That is the difference between believing
-a script is right and reading what it says.
-
-- Workbench: https://grafverse.com/basic.html
+§5's reader requirement is met by a decompiler rendering a deployed locking script as a short BASIC-dialect
+program which compiles forward again, so the two can be checked against each other: 1,108 opcodes read back as
+253 lines. Workbench: https://grafverse.com/basic.html — a separate proposal is forthcoming.
 
 The reference implementation and its test suite were written by Claude (Opus 5).
 
 ## References
 
-- BRC-X — Fixed-Width State in a Covenant's Own Locking Script; the state layout referenced in §9
+- BRC-X — Fixed-Width State in a Covenant's Own Locking Script; the state layout used by both instances above
 - BRC-226 — Miner-Enforced Resale-Royalty Covenant Tokens, which establishes the `OP_PUSH_TX`
-  self-reconstruction this standard depends on for §3. ★ The contrast is the funding model: BRC-226's spends
-  are paid for by the party transacting, and it has a party transacting. This standard addresses the case
-  where there is nobody
+  self-reconstruction this depends on. The contrast is the funding model: BRC-226's spends are paid for by the
+  party transacting, and it *has* a party transacting
 - BIP 143 — the preimage members `scriptCode`, `hashOutputs` and the spent output's value, read in §2 and §4
 - Bitcoin SV opcode semantics for `OP_SPLIT`, `OP_CAT`, `OP_BIN2NUM` and `OP_NUM2BIN`
