@@ -128,7 +128,8 @@ preimage using a constant scalar whose value is published, and `OP_CHECKSIG` rec
 real transaction, so the spend validates only if the preimage is genuine. State the property as *"no secret
 exists"*, never as *"no signature opcodes"* — the second is checkable and false.
 
-⚠ Whatever the genesis does not provide for, nobody can add later. Everything the covenant will ever do MUST
+⚠ Whatever the genesis does not provide for, nobody can add to *that instance* later — the only remedy is to
+retire it and mint a corrected one, which is a new covenant with a new identity (§5c). Everything it will do MUST
 be correct when it is broadcast; §10 records a constant that could not be fixed and forced a rebuild.
 
 ### 4. The value rule
@@ -146,18 +147,45 @@ permanently on reaching `MAX_FEE`. This is unamendable and has no symptom until 
 
 ### 5. The fee ceiling
 
-`MAX_FEE` MUST be a literal baked into the script, and is therefore permanent. It MUST be derived by
-**serializing a real worst-case spend and measuring it**, then applying the relay rate. It MUST NOT be
-hand-counted, inferred from the locking script alone, or copied from another covenant.
+However `MAX_FEE` is carried, it MUST be derived by **serializing a real worst-case spend and measuring it**,
+then applying the relay rate. It MUST NOT be hand-counted, inferred from the locking script alone, or copied
+from another covenant. That requirement holds in every configuration, because it is the step that has
+actually gone wrong in practice.
 
 ```
 MAX_FEE ≥ ceil(worstCaseTickBytes × relayRate) × headroom       headroom ~1%
 ```
 
-⚠ **This bound is unamendable and no key could raise it.** Set below what the network accepts for the worst
-case, the covenant is dead on arrival: no tick can ever pay enough to relay, and the pot is stranded
-forever. Serializing a real spend is the only permitted method because it is the only one that has been
-observed to be right.
+⚠ **Set below what the network accepts for the worst case, the covenant is dead on arrival**: no tick can
+ever pay enough to relay, and the pot is stranded. Serializing a real spend is the only permitted method
+because it is the only one observed to be right.
+
+**Three ways to carry the ceiling.** The choice is the implementer's, and it is a choice about who bears the
+consequence of getting it wrong:
+
+| | mechanism | consequence of a wrong value |
+|---|---|---|
+| **a** | a literal baked into the script | permanent; remedy is (c) |
+| **b** | a field an owner key may update | recoverable, at the cost of the ownerless claim |
+| **c** | retire the covenant and mint a corrected one | always available; a new identity, and the old one lives on |
+
+**(a)** is the strongest and is what the deployed instances use. Nothing can amend it, which is the point:
+there is no key whose compromise changes what a tick may cost.
+
+**(b)** is permitted, and is an **owner** authority under §3 — so it inherits §3's key-separation rule and
+MUST NOT be reachable by a driver credential. ⚠ It is not a theft vector, since the covenant still cannot
+direct value to a party; but a ticker who also mines captures the fee, so an unnecessarily high ceiling is an
+extraction vector and not merely waste. An implementation offering (b) SHOULD bound the update — a maximum,
+a rate limit, or both — and SHOULD state that the ownerless configuration is no longer available to it.
+
+**(c) is the real escape hatch, and every configuration has it.** Retiring an instance and minting a
+corrected one is always possible, because a covenant is self-contained and a new genesis is simply a new
+covenant. What it costs is identity: the new instance is a different chain, references to the old one do not
+follow, and the flawed one keeps running until it is retired or goes flat. §10 records this happening.
+
+⇒ So (a) is not really "unamendable" in the sense of unrecoverable — it is unamendable **in place**, and the
+recovery is a re-mint rather than an edit. Implementations SHOULD say which of the three they chose, because
+a reader cannot tell (a) from (b) without reading the script.
 
 Three sources of size variation, of which **only the first threatens the bound**:
 
@@ -262,8 +290,14 @@ describing what is deployed.
 with an opening iteration cap of 6 — too low, so it drew a blob rather than a Mandelbrot. The cap is a script
 constant and no key exists that could amend it, so it could not be patched, paused or recalled. A corrected
 covenant had to be minted as a separate genesis; the flawed one still runs, advanceable by anyone,
-unstoppable by its author, draining to flat. Implementations SHOULD expect their first genesis to be wrong
-about something, and SHOULD treat every baked constant as the whole of the engineering work.
+unstoppable by its author, draining to flat.
+
+★ **That is §5's option (c) in the wild, and it shows exactly what the escape hatch costs.** Nothing was lost
+and nothing was stolen — but the corrected instance is a different covenant with a different txid, the
+original's identity did not transfer, and a chain nobody wants continues at anybody's discretion until its
+fuel is gone. Implementations SHOULD expect their first genesis to be wrong about something, SHOULD treat
+every baked constant as the whole of the engineering work rather than as configuration, and SHOULD decide
+before minting whether they would rather pay this cost or accept an owner-updatable field under (b).
 
 Both instances declare `BRC-226` in their genesis `OP_RETURN`. That is a conformance claim, not a number this
 proposal requests: a battery *is* a BRC-226 covenant, and what this document adds is the funding model and
@@ -289,8 +323,10 @@ maxfee 314|ink esc+1-log2(log abs z) mod 32
 6. Authority is enumerated in the script, and any authority that can direct value is gated by a key distinct
    from the driver's once the driving credential is delegated. (§3)
 
-⚠ Item 3 cannot be fixed later. Every other error here yields a covenant that misbehaves and can be replaced;
-a `MAX_FEE` below the relay floor yields one that has consumed its funding and can never move again.
+⚠ Item 3 is the one whose cost is paid before anyone notices. A `MAX_FEE` below the relay floor yields an
+instance that has consumed its funding and can never move again — and where the ceiling is a baked literal
+(§5a), the remedy is not an edit but a re-mint, which strands whatever the instance already holds and
+abandons its identity. Get it right at genesis or choose §5b knowingly.
 
 ## Implementations
 
