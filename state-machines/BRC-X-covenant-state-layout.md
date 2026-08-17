@@ -302,14 +302,14 @@ All of the following are deployed on BSV mainnet.
 |---|---|---|---|
 | live counter | 2 | 24 | 674 B |
 | battery | 9 | 39 | 1,428 B |
-| racing shell | 13 | 98 | 1,672 B |
+| racing shell | 13 | 98 | 1,744 B |
 
 The header and the invariant are identical across all three. Their opening bytes:
 
 ```
 live counter   01 50 01 01 01 06 04 07 00 00 00 14 …
 battery        01 50 01 01 01 07 05 00 fe ff ff 81 …
-racing shell   01 50 01 01 01 08 01 00 14 00 00 00 …
+racing shell   01 50 01 01 01 08 01 00 14 14 ae a2 …
                └── "P" ──┘ └ver┘ └rec┘ └w₀┘└─ f₀ …
 ```
 
