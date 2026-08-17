@@ -148,18 +148,38 @@ permanently on reaching `MAX_FEE`. This is unamendable and has no symptom until 
 
 ### 5. The fee ceiling
 
+⚠⚠ **What is at stake here is money, and the amount is not chosen by the author.**
+
+§4 places no upper bound on what an instance may come to hold: a top-up is just another advance, so anybody
+may add fuel at any time, without limit and without asking. The exposure created by a design error is
+therefore not fixed at genesis — it is whatever the instance accumulates over its whole life, and it grows in
+direct proportion to the covenant's success. A flaw in something nobody funded costs nothing. The identical
+flaw in something that worked, and was funded for years by people who trusted it, costs all of it.
+
+The remedies set out below are all **lossy**, and none of them is a repair:
+
+- superseding an instance forfeits its identity and commits its remaining fuel to work nobody wants (c)
+- burning recovers the fuel but requires a key decided at genesis, and forecloses being ownerless (d)
+- an owner-updatable ceiling avoids both, and gives up the property that made the design worth having (b)
+
+⇒ So the choice of these constants is not configuration and it is not a quality concern. **It is a custody
+decision**, taken once, on behalf of everyone who will ever fund the instance — most of whom will never read
+the script and are relying on the author having done so. Treat a genesis broadcast the way a mint treats a
+die, not the way software treats a release.
+
 However `MAX_FEE` is carried, it MUST be derived by **serializing a real worst-case spend and measuring it**,
 then applying the relay rate. It MUST NOT be hand-counted, inferred from the locking script alone, or copied
 from another covenant. That requirement holds in every configuration, because it is the step that has
-actually gone wrong in practice.
+actually gone wrong in practice — twice, in the reference implementation's own history, both times with every
+test passing.
 
 ```
 MAX_FEE ≥ ceil(worstCaseTickBytes × relayRate) × headroom       headroom ~1%
 ```
 
 ⚠ **Set below what the network accepts for the worst case, the covenant is dead on arrival**: no tick can
-ever pay enough to relay, and the remaining fuel is stranded. Serializing a real spend is the only permitted method
-because it is the only one observed to be right.
+ever pay enough to relay, and every satoshi it holds can only ever be spent by a tick that cannot happen.
+Serializing a real spend is the only permitted method because it is the only one observed to be right.
 
 **How the ceiling is carried, and how a wrong one is escaped.** Two mechanisms for carrying it, and two
 routes out — the second of which requires nothing at all:
@@ -168,8 +188,8 @@ routes out — the second of which requires nothing at all:
 |---|---|---|
 | **a** | a literal baked into the script | cannot be amended in place; escape via (c) or (d) |
 | **b** | a field an owner key may update | amendable in place, at the cost of the ownerless configuration |
-| **c** | **supersede: mint a corrected instance, leave the old unfunded** | needs no key — but **strands the fuel still in it**, permanently |
-| **d** | burn the old instance | **recovers that fuel** — but requires an owner path, so the instance can never have been ownerless |
+| **c** | **supersede: mint a corrected instance, leave the old unfunded** | needs no key; the old instance's fuel is **dedicated, not lost** — see below |
+| **d** | burn the old instance | **recovers that fuel to the owner** — requires an owner path, so the instance can never have been ownerless |
 
 **(a)** is the strongest and what the deployed instances use. Nothing can amend it, which is the point: no
 key's compromise can change what a tick may cost.
@@ -185,31 +205,33 @@ and stop fuelling the flawed one. It goes flat and stays flat. Nothing is signed
 exist, and it does not depend on the old covenant cooperating — which matters, because a genuinely ownerless
 covenant *has* no path to invoke.
 
-It has two costs, and the first is easy to overlook while thinking about correctness:
+⚠ **Its fuel is not stranded, and calling it stranded is the common error.** A battery has no terminal state:
+every satoshi in it remains spendable *by advancing the covenant*, so an abandoned instance can be ticked to
+flat by any stranger and its whole balance becomes mining fees doing exactly the work it was funded for.
+Nothing is destroyed and nothing is locked away. The value is **dedicated** rather than recoverable, which is
+a different thing from lost — *ticks forward or waits for recharge* is a complete life cycle with nothing
+missing from it.
 
-⚠ **Whatever fuel the flawed instance holds is stranded, permanently.** Abandonment is free of authority, not
-free of money. An instance funded for a long run and abandoned three steps in keeps the remainder forever,
-and no key exists that could ask for it back.
+⚠ **What genuinely strands value is a terminal state, and that is a separate design error from a wrong
+constant.** A covenant with a state from which no spend is possible — a phase machine that refuses to advance
+past "finished", say — locks its remaining balance permanently, and every node carries that output for as long
+as the network exists. One such output is a curiosity. One per race, per mint or per use is **unbounded
+growth**, and nothing is demonstrated by the thousandth headstone that was not already said by the first.
 
 ⚠ **Abandonment is dormancy, not deletion, and §8 is what makes that true.** A flat covenant resumes on a
 top-up from anyone, so an abandoned instance's behaviour stays permanently *available*: a stranger may refuel
 a superseded covenant years later and it will run exactly as written. A published covenant cannot be
 withdrawn, only left unfed.
 
-**(d) burning is how the stranded fuel is recovered**, and that is its purpose rather than tidiness. The
+**(d) burning is how that fuel is recovered to its owner instead**, and that is its purpose rather than
+tidiness. The
 signature that authorises it commits to every output of the transaction, so the owner states where the value
 goes — ordinarily back to their own wallet. This is why instances built for testing SHOULD be burnable: a
 development cycle mints covenants that are *expected* to be wrong, and without a burn every one of them takes
 its funding with it.
 
-⇒ **You cannot have both an ownerless covenant and recoverable funds, and the choice is per instance.** A
-burn path is an owner authority under §3, so adding one forecloses the ownerless configuration for that
-instance. The reasonable practice is to decide by intent rather than by habit:
-
-| the instance is | give it a burn path? | because |
-|---|---|---|
-| a test, a rehearsal, a variant under proof | **yes** | it will be wrong, and its funding should come home |
-| a monument or public artefact meant to outlive its author | **no** | permanence is the point, and the stranded satoshi is its price |
+Whether an instance should have a burn path at all, and how to build one without handing it to a stranger, is
+§8.
 
 ⇒ So (a) is not "unamendable" in the sense of unrecoverable. It is unamendable **in place**, and the recovery
 is to supersede rather than to edit. Implementations SHOULD say which of these they chose, because
@@ -256,19 +278,74 @@ covenant at all, because the covenant recomputes and refuses. That makes the ref
 normative in practice, so it SHOULD be verified against exact integer arithmetic rather than floating point,
 and its operation order stated wherever truncation makes it observable.
 
-### 8. Halting and resumption
+### 8. Halting, resumption, and whether to allow destruction
 
 When `V < MAX_FEE` the covenant is **flat**. A flat covenant MUST NOT be treated as terminated: its state is
 intact in its locking script, and a top-up under §4 resumes it at exactly the step it stopped on.
-Implementations MUST NOT add an "expired" state, and in the ownerless configuration MUST NOT provide any path
-that recovers the fuel to a party.
+Implementations MUST NOT add an "expired" state. Remaining steps are `floor(V / MAX_FEE)`, computable by any
+observer from the UTXO alone.
 
-⚠ That prohibition is the whole cost of being ownerless, stated plainly: **an ownerless instance's remaining
-fuel can never be recovered by anybody, including its author.** It is not stranded by accident — it is
-stranded by the same rule that makes the covenant nobody's. An instance that may need its funding back MUST
-be given an owner burn path at genesis (§5d), because one cannot be added afterwards.
+**Ticks forward, or waits for recharge.** That is a complete life cycle, and recognising it as complete is
+what makes the next decision answerable.
 
-Remaining steps are `floor(V / MAX_FEE)`, computable by any observer from the UTXO alone.
+#### 8.1 Whether the covenant needs a way to be destroyed
+
+> **A covenant needs a burn path UNLESS permanence is the point of it.**
+
+The test is *not* "can the money come back". It is **bounded and intentional** against **unbounded and
+incidental**:
+
+```
+BOUNDED + INTENTIONAL     one output, forever, on purpose      → a MONUMENT.  No burn. It is the point.
+UNBOUNDED + INCIDENTAL    one per race, per mint, per use      → a LEAK.      It MUST be burnable.
+```
+
+A single immortal artefact is a monument. One per use is a leak — nothing is demonstrated by the thousandth
+headstone that was not already said by the first, and every node carries all of them for as long as the
+network exists.
+
+⚠ **Note which quantity the test is about.** It is not the *value* locked but the *number of outputs* created.
+A covenant with a terminal state — a phase machine that refuses to advance past "finished" — leaves an output
+nobody can ever spend. One is a curiosity; one per use is unbounded growth in every node's UTXO set. A battery
+has no terminal state, which is why abandoning one costs nothing structurally: its fuel is still spendable by
+advancing it, and any stranger may tick it to flat.
+
+#### 8.2 Why an ownerless covenant MUST NOT have one
+
+A burn needs a signature; a signature needs an owner; an owner destroys *"no key to steal"*, which is the
+entire thesis. So the two cannot be combined, and attempting it does not produce a compromise — it produces a
+covenant that is **free to the first passer-by who reads the script**.
+
+An ownerless instance MUST NOT have a burn path. Where one is warranted by §8.1, the instance is an **owned**
+instance under §3 and MUST be built that way from genesis.
+
+⚠ **Recorded so it is not re-proposed:** *"when the value falls below one tick, let anybody sweep it."* It is
+genuinely keyless, and it is still wrong — it makes draining a battery profitable, and it converts a monument
+into scrap by giving it an ending it should not have.
+
+#### 8.3 Building a burn path that is not a free sweep
+
+Where §8.1 requires one, the burn itself enforces **nothing**: the owner's signature is `SIGHASH_ALL`, so it
+already commits to every output. The owner has said where the money goes; there is nothing left for the
+covenant to check and no output of its own to re-create.
+
+Four guards make that safe, and all four matter:
+
+1. The burn flag MUST sit **deepest** in the unlocking script, so that adding it moves no existing depth.
+2. Its depth MUST be **derived** from the field list rather than written down, or the two drift apart.
+3. The branch MUST sit **below the owner check**, so the signature is verified before the branch is read and a
+   burn is unforgeable.
+4. It MUST **re-verify that the instance is claimed**. An unclaimed instance's owner field is zero bytes, the
+   signature check above it is skipped rather than failed, and an unguarded burn then hands a passer-by the
+   whole balance in one transaction.
+
+⚠ Guard 4 is not hypothetical. **Load, own, burn:** measured against a real deployment before the fix existed,
+a passer-by wrote their own key into an unwritten owner field, became the owner, and could then burn the
+instance and walk off with its fuel. The field MUST be written once, at genesis, and MUST NOT be writable
+again.
+
+★ **Test the refusals harder than the acceptances, and always include a control with the burn flag withheld.**
+Without that control a branch that does nothing at all passes every other test.
 
 ### 9. State
 
@@ -361,10 +438,12 @@ maxfee 314|ink esc+1-log2(log abs z) mod 32
 6. Authority is enumerated in the script, and any authority that can direct value is gated by a key distinct
    from the driver's once the driving credential is delegated. (§3)
 
-⚠ Item 3 is the one whose cost is paid before anyone notices. A `MAX_FEE` below the relay floor yields an
-instance that has consumed its funding and can never move again — and where the ceiling is a baked literal
-(§5a), the remedy is not an edit but a re-mint, which strands whatever the instance already holds and
-abandons its identity. Get it right at genesis or choose §5b knowingly.
+⚠ Item 3 is the one whose cost is paid before anyone notices, and the one whose cost is denominated in money
+rather than in reputation. A `MAX_FEE` below the relay floor yields an instance that can never move again,
+holding everything anybody ever contributed to it. Where the ceiling is a baked literal (§5a) there is no
+edit, only a re-mint that abandons both the funds and the identity. The bound MUST therefore be derived from a
+serialized spend before the genesis is broadcast — not before release, not before review: **before the
+genesis**, because that transaction is the last moment at which any of it can be changed.
 
 ## Implementations
 
