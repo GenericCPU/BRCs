@@ -51,8 +51,11 @@ genuinely pay somebody, the same technique extends:
 ```
 1. battery       may only advance its own program, paying its own fee   ← THIS STANDARD
 2. payee-bound   may pay only recipients enumerated when it was built
-3. rate-bound    caps value per spend or per block, enforced in script
+3. rate-bound    caps value per spend, enforced in script
 ```
+
+⚠ Rung 3 caps *per spend*, which is what `MAX_FEE` already is. Capping per unit of *time* is not available:
+a covenant has no clock but `nLockTime`, and gating on it restricts honest use identically (§4.1).
 
 Rungs 2 and 3 are out of scope here. A reader who needs them must not reach them by relaxing §4, which is
 what makes rung 1 safe.
@@ -92,6 +95,30 @@ committing to them in the sighash.
 
 ⚠ A tick MUST NOT require a funding input. The moment it does, the ticker needs a wallet.
 
+#### 2.1 Composing two conforming covenants in one transaction
+
+⚠ **Pinning the successor to `out0` is what makes a tick verifiable, and it is also a composability trap that
+is invisible until the transaction you need cannot exist.** Two covenants that each rebuild themselves at
+output 0 can never appear in the same transaction — there is one output 0 — so any interaction requiring both
+to move at once is unconstructible. This is not a rule that can be relaxed later; it is discovered at the
+moment a second covenant is written, by which time the first is deployed.
+
+Where two conforming covenants must transact together, one of them MUST be built to tolerate an output offset:
+
+- one covenant keeps `out0` and is unchanged
+- the other verifies its own successor at a **fixed offset** it carries as a prefix, rather than at output 0
+- the offset-tolerant covenant recognises its counterparty **by shape** — a known head, a known run of pinned
+  push opcodes, a known tail — rather than by a hash of the counterparty's script at rest, because a
+  counterparty carrying state has no single resting form to hash
+
+⇒ The cost measured on the reference implementation was about 150 bytes in the offset-tolerant covenant.
+
+⚠ The failure this avoids is not primarily technical. Faced with a transaction that could not exist, the
+specification was for a time **redescribed** to match what had been built, and sixteen tests then passed
+against a machine that did the wrong job while the one test that described the real requirement was left
+failing as evidence the specification was at fault. **When the build cannot do what the specification says,
+that is a bug in the build.**
+
 ### 3. Authorisation, ownership and control
 
 The covenant MUST authorise the advance by validating the sighash preimage supplied in the unlocking script,
@@ -128,6 +155,14 @@ preimage using a constant scalar whose value is published, and `OP_CHECKSIG` rec
 real transaction, so the spend validates only if the preimage is genuine. State the property as *"no secret
 exists"*, never as *"no signature opcodes"* — the second is checkable and false.
 
+⚠ **And test it by parsing, never by searching the hex.** A DER signature is not a byte pattern that can be
+grepped for: a locking script of this kind is mostly preimage material — hashes, txids, derived constants —
+whose bytes are effectively random, so any short pattern occurs by chance. Searching for `3044`/`3045` in the
+hex was **measured producing a false positive in ~1.6% of runs**: often enough to be dismissed as a fluke, and
+often enough to send someone hunting a signature bug that was never there. Walk the parsed chunks instead. ⇒ A
+detector MUST also be provoked in the same test — sign something real and require it to be reported — or
+“no signature found” is indistinguishable from “cannot find signatures”.
+
 ⚠ Whatever the genesis does not provide for, nobody can add to *that instance* later. The remedy is to
 supersede it — mint a corrected covenant and stop fuelling the old one (§5c) — which costs the original's
 identity and leaves it dormant rather than gone. Everything an instance will ever do MUST therefore be
@@ -145,6 +180,34 @@ adding fuel and advancing the state are one atomic operation.
 permanently on reaching `MAX_FEE`. This is unamendable and has no symptom until the day it stops.
 
 `MAX_FEE` bounds the worst case; it is not the price. An honest ticker pays only what the network requires.
+
+#### 4.1 What a hostile stranger can do — griefing, not theft
+
+If anybody may advance the covenant, then anybody may advance it **repeatedly and maliciously**, consuming up
+to `MAX_FEE` each time until it is flat. A standard that did not say so would be concealing its own threat
+model. The precise claim is narrower than it sounds, and the distinction is the whole security story:
+
+> **Anyone can empty it. Nobody can take it.**
+
+Every satoshi that leaves is bounded by §4 and lands where the script says, which is never an address of the
+attacker's choosing. The attacker spends their own time and bandwidth and receives nothing. This has been
+measured on a sibling covenant — a tank of 100,000 satoshis, attacked with no key, no coin and nothing funded:
+95,815 was forced out into destinations only the owner could realise, 4,185 went to miners, and **zero reached
+the attacker**. The owner recovered 93,815; the attack cost 6.2%, all of it mining fees.
+
+★ **And for a battery specifically, the vector very nearly closes itself.** Where the covenant's only possible
+output is its own progress, an attacker who drains it has *performed the work it was funded for* — faster than
+its owner intended, and at their own expense. Griefing is only meaningfully hostile where the fuel could have
+served a purpose the owner valued more than acceleration, as with a reservoir that funds other covenants.
+
+⚠ **Mitigation is operational, not scriptable.** Fund lightly and top up: an instance is
+`balance ÷ MAX_FEE` steps from flat, and §4 makes refuelling free of ceremony precisely so that keeping the
+balance small costs nothing. This is the correct reading of "fund small, top up" — **a griefing limit, not a
+theft limit.**
+
+⚠ **A rate limit cannot substitute for it.** A covenant has no clock. The only temporal fact available to it is
+`nLockTime`, and gating advances on that throttles the honest driver exactly as much as the attacker. An
+implementation MUST NOT claim a time-based rate limit it cannot enforce.
 
 ### 5. The fee ceiling
 
@@ -269,6 +332,12 @@ Three sources of size variation, of which **only the first threatens the bound**
    variant whose script grew while its ceiling did not is a covenant no node will relay, and it looks healthy
    until the first refusal. The ceiling MUST be re-derived per variant, from a single named measurement
    shared by the builder and by whatever checks the builder.
+   ⚠ It MUST cover the worst spend **any legal variant** can produce, not the variant that happened to be
+   measured. A bound derived only from one configuration sat at 97.2 sat/KB against a 100 floor, with every
+   test green, because a later change made a *different* configuration the larger one.
+   ⚠ And it MUST be measured on the transaction the covenant **exists for**. A ceiling derived from a simple
+   spend was 61.8 sat/KB on the composite spend that was the covenant's actual purpose — in which a second
+   covenant is also an input, and its whole script is paid for again inside its own preimage.
 2. **Extra inputs and outputs — safe.** A sponsored top-up is larger, but the sponsor funds the difference.
    The ceiling bounds what leaves the *covenant*, not what the transaction pays.
 3. **Variable-length payload — safe.** Free text in an `OP_RETURN` beside a contribution rides on the
@@ -380,6 +449,12 @@ again.
 
 ★ **Test the refusals harder than the acceptances, and always include a control with the burn flag withheld.**
 Without that control a branch that does nothing at all passes every other test.
+
+⚠ **A rule no test has provoked is a rule no test has examined.** In Script a refusal looks identical whether
+it came from the rule under test or from something else entirely, so a test that never reached its rule passes
+exactly as convincingly as one that did. A conforming implementation SHOULD assert not merely that an invalid
+spend was refused but that it was refused *for the stated reason*, and treat anything that stays green across a
+change with suspicion rather than relief. **A passing check is a hypothesis wearing a costume.**
 
 ### 9. State
 
