@@ -120,6 +120,7 @@
 * [1Sat Provenance Remittance for Basket `1sat`](./tokens/0150.md)
 * [1Sat Ordinals — Single-Satoshi Tokens and Origin Tracking](./tokens/0159.md)
 * [1Sat Ordinals — Inscription Envelopes](./tokens/0160.md)
+* [P1Sat Permission Scheme for Basket `1sat`](./tokens/0165.md)
 * [Miner-Enforced Resale-Royalty Covenant Tokens (OP_PUSH_TX)](./tokens/0226.md)
 
 ## Overlays
