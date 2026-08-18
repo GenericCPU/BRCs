@@ -2,7 +2,7 @@
 
 ## Contribute
 
-* [Discuss on Github](https://github.com/bitcoin-sv/BRCs/discussions/new/choose)
+* [Discuss on Github](https://github.com/bsv-blockchain/BRCs/discussions/new/choose)
 
 ## Example
 
@@ -50,6 +50,7 @@
 * [Action Reference Labels for BRC-100 Wallets](./wallet/0153.md)
 * [Pluggable Backup Services for BRC-140 Share Vaults](./wallet/0154.md)
 * [Pull-Based Receive Discovery](./wallet/0155.md)
+* [Output Identity Tags for BRC-100 Wallets](./wallet/0164.md)
 * [Wallet Permission Prompt Liveness Contract](./wallet/0219.md)
 
 ## Transactions
@@ -84,12 +85,12 @@
 * [Multicast Anchor Transaction Frame Format](./transactions/0134.md)
 * [Multicast Block Header Format](./transactions/0135.md)
 * [Multicast Shard Manifest Announcement Protocol](./transactions/0139.md)
-* [Outpoint BEEF](./transactions/0158.md)
 * [Multicast Transaction Bundle Frame Format](./transactions/0142.md)
 * [Subtree Data Frame Format](./transactions/0143.md)
 * [Block Frame Format](./transactions/0144.md)
 * [Multicast Shard Domain Partitioning and the BEEF Object Plane](./transactions/0148.md)
 * [Multicast BEEF Object Frame Format](./transactions/0149.md)
+* [Outpoint BEEF](./transactions/0158.md)
 
 ## Scripts
 
@@ -151,6 +152,7 @@
 * [x402 Stateless Settlement-Gated HTTP Protocol](./payments/0120.md)
 * [Simple 402 Payments](./payments/0121.md)
 * [PeerPay URI Scheme for BRC-29 Payments](./payments/0125.md)
+* [Unlinkable Payments under the Identity Paradigm](./payments/0228.md)
 
 ## Peer-to-Peer
 
