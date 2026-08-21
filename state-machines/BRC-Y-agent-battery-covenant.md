@@ -109,10 +109,23 @@ never be refuelled by anyone and dies permanently on reaching `MAX_FEE`, with no
 The covenant SHOULD use `SIGHASH_ANYONECANPAY | ALL | FORKID` (`0xc1`), so a sponsor MAY add a funding input
 without invalidating the covenant's introspection while `out0` stays pinned.
 
-⚠ **Anyone can empty it; nobody can take it.** Whoever may advance the covenant may advance it maliciously until
-it is flat, but every satoshi that leaves is bounded by this rule and lands where the script says — never at an
-address of the attacker's choosing. Mitigation is operational: **fund lightly and top up.** That is a griefing
-limit, not a theft limit.
+⚠ **Anyone can empty it; nobody can take it — but the bound must be stated exactly.** Whoever may advance the
+covenant may advance it maliciously until it is flat. This rule bounds what *leaves* per tick; it does not by
+itself decide where the surplus *lands*.
+
+```
+extractable per tick  =  MAX_FEE  −  the fee the transaction must actually pay to relay
+```
+
+A tick that routes that surplus to the spender rather than to a miner still satisfies this section, and is
+stopped only by the relay floor. ⇒ **The headroom in §5 is the extraction surface.** Keep it at the measured
+minimum and the amount is dust; leave it generous and §3.1 is defeated without this rule ever being broken. The
+Appendix reproduces a deployed covenant in which it was **844 satoshis per spend, to anyone, with no key**.
+
+⇒ So §4 does not deliver §3.1 on its own. A conforming implementation gets there by keeping `MAX_FEE` at the
+serialized worst case, or by constraining the surplus explicitly.
+
+Mitigation for the rest is operational: **fund lightly and top up.** That is a griefing limit, not a theft limit.
 
 ### 5. The fee ceiling
 
@@ -248,7 +261,7 @@ The reference implementation and its test suite were written by Claude (Opus 5).
 - BIP 143 — the preimage members `scriptCode`, `hashOutputs` and the spent output's value, read in §2 and §4
 - Bitcoin SV opcode semantics for `OP_SPLIT`, `OP_CAT`, `OP_BIN2NUM` and `OP_NUM2BIN`
 
-## Appendix — two conforming covenants, in full
+## Appendix — two deployed covenants, in full, and one of them breaks §3.1
 
 The complete locking scripts of the deployed fuel depot and the vehicle it fuels, as they stand on chain. They
 are reproduced for one reason: **this is what a reviewer is actually being asked to trust.**
@@ -257,6 +270,39 @@ Between them they carry a fee ceiling, a tank ceiling, an owner check, a burn br
 state fields, a phase machine, quadratic drag, and a cross-covenant read in which the depot locates the owner
 field inside the vehicle's script without sharing a line of code with it. Every rule in this document is in
 here somewhere, and none of it can be found by looking.
+
+### ⚠⚠ Including the rule this depot fails
+
+The depot below **does not conform to §3.1**. It is printed unchanged anyway, and the failure is named here
+rather than quietly corrected, because it demonstrates the document's own thesis better than a clean example
+could.
+
+```
+unlocking stack   [ prefixOutputs, burn, sig, pubKey, spenderOutputs, newValue, preimage ]
+the binding       HASH256( prefixOutputs ‖ newValue ‖ myOwnScriptCode ‖ spenderOutputs ) == hashOutputs
+the arrival rule  carValue ≥ (V − out_depot) − MAX_FEE
+```
+
+`spenderOutputs` is supplied by the spender and is constrained only by being committed to in the sighash —
+which §4 expressly permits. The arrival rule then leaves `MAX_FEE` of slack. So a spender may take the draw,
+hand the vehicle `(V − out_depot) − MAX_FEE`, and direct the difference to an output of their own choosing:
+**844 satoshis per spend, available to anyone, with no key.** That is precisely what §3.1 forbids.
+
+⚠ Note which rule did *not* stop it. The §4 value floor held throughout — it bounds what leaves, not where the
+surplus lands, which is why §4 now states that bound exactly.
+
+★ **Three reasons it stays in the document:**
+
+1. It is what is on chain. A standard illustrated with a covenant nobody deployed is a standard illustrated
+   with a wish.
+2. **The defect is invisible in the bytes below**, which is this document's central claim about covenants of
+   useful size. A reader who can find it by eye has disproved §5's warning; a reader who cannot has confirmed it.
+3. It was found by **measuring a spend**, not by reading the script — after the covenant had passed seventy-three
+   tests. A conformance argument that rests on review rests on nothing.
+
+⚠ The instance holds one satoshi and is deliberately unfunded. Its successor closes the hole by requiring that
+an extraction attempt repay the covenant rather than a miner — the surplus is made unreachable instead of merely
+forbidden a destination.
 
 **Fuel depot** — `e889c1f15b2739f8729e4dc256199581137eae6df72f09ddc558bfdb54ddb0e8`, output 0, 875 bytes:
 
