@@ -13,7 +13,7 @@
 * [The deployment-info.json Specification](./apps/0102.md)
 * [Auditable Real-time Inference Architecture (ARIA)](./apps/0122.md)
 * [Registry-Free Typed Content Anchor with On-Chain Code Provenance](./apps/0145.md)
-* [Access Gates for Metanet Rooms](./apps/0146.md)
+* [Access Gates for Metanet Rooms](./apps/0190.md)
 * [Verifiable Time Allocation](./apps/0168.md)
 * [Derived Collectibles](./apps/0210.md)
 * [Chat-Native Command Grammar for the Metanet](./apps/0218.md)
