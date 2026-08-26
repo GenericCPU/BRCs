@@ -226,6 +226,7 @@ BRC | Standard
 164  | [Output Identity Tags for BRC-100 Wallets](./wallet/0164.md)
 168  | [Verifiable Time Allocation](./apps/0168.md)
 169  | [Universal Handle Addressing and Resolution for the Metanet](./peer-to-peer/0169.md)
+170  | [Locked Content Header (LCH) — Licensed, Micropayment-Enabled Content](./apps/0170.md)
 210  | [Derived Collectibles](./apps/0210.md)
 218  | [Chat-Native Command Grammar for the Metanet](./apps/0218.md)
 219  | [Wallet Permission Prompt Liveness Contract](./wallet/0219.md)
