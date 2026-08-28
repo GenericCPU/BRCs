@@ -104,6 +104,7 @@
 * [Bare Multi-Signature](./scripts/0047.md)
 * [Pay to Push Drop](./scripts/0048.md)
 * [Bitcoin Script ASM Format](./scripts/0106.md)
+* [Bitcoin Script to and from Bitcoin BASIC — a compiler and a decompiler](./scripts/0173.md)
 
 ## Tokens
 
