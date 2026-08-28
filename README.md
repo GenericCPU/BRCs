@@ -231,6 +231,7 @@ BRC | Standard
 167  | [Chunked, Hashed, Interleaved Resolution Protocol (CHIRP)](./overlays/0167.md)
 168  | [Verifiable Time Allocation](./apps/0168.md)
 169  | [Universal Handle Addressing and Resolution for the Metanet](./peer-to-peer/0169.md)
+170  | [Locked Content Header (LCH) — Licensed, Micropayment-Enabled Content](./apps/0170.md)
 171  | [Fixed-Width State in a Covenant's Own Locking Script](./state-machines/0171.md)
 172  | [Giving an AI Agent Control of a Delivery Vehicle Without Giving It a Wallet](./state-machines/0172.md)
 173  | [Bitcoin Script to and from Bitcoin BASIC — a compiler and a decompiler](./scripts/0173.md)
