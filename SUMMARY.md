@@ -157,6 +157,7 @@
 * [x402 Stateless Settlement-Gated HTTP Protocol](./payments/0120.md)
 * [Simple 402 Payments](./payments/0121.md)
 * [PeerPay URI Scheme for BRC-29 Payments](./payments/0125.md)
+* [P2PKH Payments for HTTP 402](./payments/0166.md)
 * [Unlinkable Payments under the Identity Paradigm](./payments/0228.md)
 
 ## Peer-to-Peer

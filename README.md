@@ -228,6 +228,7 @@ BRC | Standard
 163  | [BSV-21 Basket Profile for BRC-46 / BRC-100](./tokens/0163.md)
 164  | [Output Identity Tags for BRC-100 Wallets](./wallet/0164.md)
 165  | [P1Sat Permission Scheme for Basket `1sat`](./tokens/0165.md)
+166  | [P2PKH Payments for HTTP 402](./payments/0166.md)
 167  | [Chunked, Hashed, Interleaved Resolution Protocol (CHIRP)](./overlays/0167.md)
 168  | [Verifiable Time Allocation](./apps/0168.md)
 169  | [Universal Handle Addressing and Resolution for the Metanet](./peer-to-peer/0169.md)
