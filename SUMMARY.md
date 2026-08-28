@@ -219,3 +219,4 @@
 
 * [Simplifying State Machine Event Chains in Bitcoin](./state-machines/0060.md)
 * [Fixed-Width State in a Covenant's Own Locking Script](./state-machines/0171.md)
+* [Giving an AI Agent Control of a Delivery Vehicle Without Giving It a Wallet](./state-machines/0172.md)

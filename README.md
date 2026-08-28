@@ -231,6 +231,7 @@ BRC | Standard
 168  | [Verifiable Time Allocation](./apps/0168.md)
 169  | [Universal Handle Addressing and Resolution for the Metanet](./peer-to-peer/0169.md)
 171  | [Fixed-Width State in a Covenant's Own Locking Script](./state-machines/0171.md)
+172  | [Giving an AI Agent Control of a Delivery Vehicle Without Giving It a Wallet](./state-machines/0172.md)
 210  | [Derived Collectibles](./apps/0210.md)
 218  | [Chat-Native Command Grammar for the Metanet](./apps/0218.md)
 219  | [Wallet Permission Prompt Liveness Contract](./wallet/0219.md)
