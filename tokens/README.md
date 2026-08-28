@@ -19,4 +19,5 @@ BRC | Standard
 160  | [1Sat Ordinals — Inscription Envelopes](./0160.md)
 161  | [BSV-21 Fungible Tokens (JSON / Legacy)](./0161.md)
 162  | [BSV-21 Fungible Tokens (Binary)](./0162.md)
+163  | [BSV-21 Basket Profile for BRC-46 / BRC-100](./0163.md)
 226  | [Miner-Enforced Resale-Royalty Covenant Tokens (OP_PUSH_TX)](./0226.md)

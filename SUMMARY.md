@@ -122,6 +122,7 @@
 * [1Sat Ordinals — Inscription Envelopes](./tokens/0160.md)
 * [BSV-21 Fungible Tokens (JSON / Legacy)](./tokens/0161.md)
 * [BSV-21 Fungible Tokens (Binary)](./tokens/0162.md)
+* [BSV-21 Basket Profile for BRC-46 / BRC-100](./tokens/0163.md)
 * [Miner-Enforced Resale-Royalty Covenant Tokens (OP_PUSH_TX)](./tokens/0226.md)
 
 ## Overlays

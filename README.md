@@ -225,6 +225,7 @@ BRC | Standard
 160  | [1Sat Ordinals — Inscription Envelopes](./tokens/0160.md)
 161  | [BSV-21 Fungible Tokens (JSON / Legacy)](./tokens/0161.md)
 162  | [BSV-21 Fungible Tokens (Binary)](./tokens/0162.md)
+163  | [BSV-21 Basket Profile for BRC-46 / BRC-100](./tokens/0163.md)
 164  | [Output Identity Tags for BRC-100 Wallets](./wallet/0164.md)
 167  | [Chunked, Hashed, Interleaved Resolution Protocol (CHIRP)](./overlays/0167.md)
 168  | [Verifiable Time Allocation](./apps/0168.md)
