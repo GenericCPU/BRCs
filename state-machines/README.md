@@ -5,3 +5,4 @@ This directory contains standards for methods of implementing state machines and
 BRC  | Standard
 -----|------------------
 0060 | [Simplifying State Machine Event Chains in Bitcoin](./0060.md)
+0171 | [Fixed-Width State in a Covenant's Own Locking Script](./0171.md)

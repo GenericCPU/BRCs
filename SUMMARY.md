@@ -218,3 +218,4 @@
 ## State Machines
 
 * [Simplifying State Machine Event Chains in Bitcoin](./state-machines/0060.md)
+* [Fixed-Width State in a Covenant's Own Locking Script](./state-machines/0171.md)
