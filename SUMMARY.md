@@ -206,6 +206,7 @@
 * [Animated-QR Air-Gap Transport for Arbitrary Payloads (TKQR1)](./peer-to-peer/0225.md)
 * [Binary Encoding for the Message Relay Interface](./peer-to-peer/0231.md)
 * [Sigma Identity](./peer-to-peer/0247.md)
+* [BAP-Backed Issuer Attestation](./peer-to-peer/0247.md)
 * [Keyed Content and Conditional Key Release](./peer-to-peer/0369.md)
 
 ## Key Derivation

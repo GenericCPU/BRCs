@@ -27,4 +27,5 @@ BRC | Standard
 225  | [Animated-QR Air-Gap Transport for Arbitrary Payloads (TKQR1)](./0225.md)
 231  | [Binary Encoding for the Message Relay Interface](./0231.md)
 247  | [Sigma Identity](./0247.md)
+247  | [BAP-Backed Issuer Attestation](./0247.md)
 369  | [Keyed Content and Conditional Key Release](./0369.md)
