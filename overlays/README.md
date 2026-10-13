@@ -2,6 +2,8 @@
 
 This directory contains standards for creating and interacting with overlay networks generally, and protocols for specific overlay networks.
 
+[BRC-183](./0183.md) defines Strict Overlays and Federated Overlays within this general category, providing shared terminology for common state and permitted differences in hosts' collections.
+
 BRC | Standard
 -----|------------------
 22   | [Overlay Network Data Synchronization](./0022.md)
@@ -17,3 +19,11 @@ BRC | Standard
 101  | [Diverse Facilitators and URL Protocols for SHIP and SLAP Overlay Advertisements](./0101.md)
 136  | [Block-Anchored Overlay Synchronization via Block-Aligned Sparse Merkle Trees (BASM)](./0136.md)
 167  | [Chunked, Hashed, Interleaved Resolution Protocol (CHIRP)](./0167.md)
+178  | [Race-Settled Collection Markets for Overlay Lookups and Message Boxes](./0178.md)
+180  | [Overlay Service Discovery at an Internet Domain](./0180.md)
+183  | [A Framework for Strict and Federated Overlays](./0183.md)
+193  | [Incremental Lookup and Resumable Live Results](./0193.md)
+194  | [Overlay Capabilities and Non-Final Proposal Sessions](./0194.md)
+195  | [Private Overlay Data and Recoverable Paid Lookup](./0195.md)
+196  | [STEAK with POTATOES](./0196.md)
+199  | [SHIP and SLAP Root-Host Output Eviction Coordination](./0199.md)
