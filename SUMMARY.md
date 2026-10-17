@@ -58,10 +58,14 @@
 * [Signed Capability Manifest for Wallet and Tool-Server Method Exposure](./wallet/0179.md)
 * [Wallet-Enforced Autonomous-Agent Spend Policy](./wallet/0181.md)
 * [Optional Metadata Registries and Their Stewardship](./wallet/0184.md)
+* [Wallet Substrate Discovery, Selection, and Encrypted Mobile Connections](./wallet/0185.md)
 * [User Management Protocol (UMP)](./wallet/0188.md)
 * [Identity, Certificates, Discovery, and Personal Trust in Applications](./wallet/0189.md)
 * [Agent Allowances](./wallet/0204.md)
 * [Extensible Wallet Version Strings and Account Labels](./wallet/0205.md)
+* [1Color Wallet Module](./wallet/0207.md)
+* [Vault Sub-Accounts](./wallet/0208.md)
+* [1Color Minimal Resource Profile](./wallet/0209.md)
 * [Wallet Permission Prompt Liveness Contract](./wallet/0219.md)
 * [Wallet-Native Elliptic Curve Point Multiplication as a BRC-98 Module](./wallet/0229.md)
 
@@ -134,7 +138,7 @@
 * [1Sat Ordinals — Single-Satoshi Tokens and Origin Tracking](./tokens/0159.md)
 * [1Sat Ordinals — Inscription Envelopes](./tokens/0160.md)
 * [BSV-21 Fungible Tokens (JSON / Legacy)](./tokens/0161.md)
-* [Mandala Tokens](./tokens/0162.md)
+* [1Color](./tokens/0162.md)
 * [BSV-21 Basket Profile for BRC-46 / BRC-100](./tokens/0163.md)
 * [P1Sat Permission Scheme for Basket `1sat`](./tokens/0165.md)
 * [Consensus-Unique Name Tokens — Identity Binding and Verified Resolution](./tokens/0174.md)
@@ -165,6 +169,7 @@
 * [Private Overlay Data and Recoverable Paid Lookup](./overlays/0195.md)
 * [STEAK with POTATOES](./overlays/0196.md)
 * [SHIP and SLAP Root-Host Output Eviction Coordination](./overlays/0199.md)
+* [Signed On-Chain Reachability Manifest](./overlays/0211.md)
 
 ## Payments
 
@@ -181,6 +186,7 @@
 * [Simple 402 Payments](./payments/0121.md)
 * [PeerPay URI Scheme for BRC-29 Payments](./payments/0125.md)
 * [P2PKH Payments for HTTP 402](./payments/0166.md)
+* [1Color Offline Peer-to-Peer Payments](./payments/0175.md)
 * [Unlinkable Payments under the Identity Paradigm](./payments/0228.md)
 
 ## Peer-to-Peer
@@ -208,6 +214,7 @@
 * [Animated-QR Air-Gap Transport for Arbitrary Payloads (TKQR1)](./peer-to-peer/0225.md)
 * [Binary Encoding for the Message Relay Interface](./peer-to-peer/0231.md)
 * [Identity-Key Issuer Attestation](./peer-to-peer/0247.md)
+* [Offline Issuer Identity Packages](./peer-to-peer/0248.md)
 * [Keyed Content and Conditional Key Release](./peer-to-peer/0369.md)
 
 ## Key Derivation
