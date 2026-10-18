@@ -144,6 +144,7 @@
 * [Consensus-Unique Name Tokens — Identity Binding and Verified Resolution](./tokens/0174.md)
 * [BSV-21 — Validity Proofs](./tokens/0176.md)
 * [Accumulating Right-of-Sale Listings and Purchase Orders](./tokens/0197.md)
+* [Wrapped UTXOs from Foreign Chains](./tokens/0212.md)
 * [Miner-Enforced Resale-Royalty Covenant Tokens (OP_PUSH_TX)](./tokens/0226.md)
 
 ## Overlays
